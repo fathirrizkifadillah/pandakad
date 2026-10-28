@@ -38,7 +38,11 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
 			className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 lg:p-6 transition-all duration-300"
 		>
 			<div className="w-full h-full max-w-7xl max-h-[92vh] rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-				<CampusMapExplorer onClose={onClose} isModal={true} />
+				<CampusMapExplorer
+					onClose={onClose}
+					isModal={true}
+					standaloneHeader={true}
+				/>
 			</div>
 		</div>
 	);
