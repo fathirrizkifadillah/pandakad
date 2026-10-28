@@ -5,6 +5,7 @@ import {
 	Calendar,
 	CalendarDays,
 	CalendarRange,
+	Compass,
 	Database,
 	FileBarChart,
 	FileText,
@@ -54,6 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 					},
 					{ label: "Laporan", path: "admin-laporan", icon: FileBarChart },
 					{ label: "Pengaturan", path: "admin-pengaturan", icon: Settings },
+					{ label: "Peta kampus", path: "campus-map", icon: Compass },
 				];
 			case "Dosen":
 				return [
@@ -68,6 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 					{ label: "Input nilai", path: "dosen-nilai", icon: Award },
 					{ label: "Materi dan tugas", path: "dosen-materi", icon: FileText },
 					{ label: "Profil", path: "dosen-profil", icon: UserCircle },
+					{ label: "Peta kampus", path: "campus-map", icon: Compass },
 				];
 			case "Mahasiswa":
 				return [
@@ -77,6 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 					{ label: "Nilai", path: "mhs-nilai", icon: Award },
 					{ label: "Presensi", path: "mhs-presensi", icon: UserCheck },
 					{ label: "Profil", path: "mhs-profil", icon: UserCircle },
+					{ label: "Peta kampus", path: "campus-map", icon: Compass },
 				];
 		}
 	};
@@ -117,7 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 							UNPANDA
 						</span>
 						<span className="text-[11px] font-semibold text-[#75834a] tracking-wider uppercase">
-							Sistem Akademik
+							Universitas Panda Raya
 						</span>
 					</div>
 				</div>
@@ -142,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 								key={item.path}
 								type="button"
 								onClick={() => handleNavClick(item.path)}
-								className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 select-none ${
+								className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 select-none cursor-pointer ${
 									isActive
 										? "bg-[#75834a] text-white shadow-xs"
 										: "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
@@ -159,12 +163,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
 					})}
 				</nav>
 
-				{/* Logout Section */}
+				{/* Mini Mascot Assistant Pill in Sidebar */}
 				<div className="p-3 border-t border-[#f1f5f9]">
+					<div className="p-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-[#75834a]/10 border border-[#d2ae54]/30 flex items-center gap-2.5 mb-2">
+						<img
+							src="/assets/mascot/panda-wave.webp"
+							alt="Panda Sahabat Belajar"
+							className="w-8 h-8 object-contain shrink-0"
+						/>
+						<div className="min-w-0">
+							<span className="text-[11px] font-bold text-[#566432] block truncate leading-tight">
+								Panda Assistant
+							</span>
+							<span className="text-[10px] text-slate-500 block truncate">
+								Siap membantumu!
+							</span>
+						</div>
+					</div>
+
+					{/* Logout Button */}
 					<button
 						type="button"
 						onClick={onLogout}
-						className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+						className="w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
 					>
 						<LogOut className="w-4 h-4 shrink-0 text-rose-500" />
 						<span>Keluar Sistem</span>

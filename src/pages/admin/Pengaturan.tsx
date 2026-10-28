@@ -11,7 +11,7 @@ export const Pengaturan: React.FC = () => {
 					Pengaturan Sistem & Profil Institusi
 				</h2>
 				<p className="text-xs text-slate-500 mt-1">
-					Identitas kampus Universitas Pandanaran (UNPANDA), konfigurasi portal,
+					Identitas kampus Universitas Panda Raya (UNPANDA), konfigurasi portal,
 					dan keamanan.
 				</p>
 			</div>
@@ -25,12 +25,12 @@ export const Pengaturan: React.FC = () => {
 					/>
 					<div>
 						<h3 className="font-extrabold text-lg text-slate-900">
-							Universitas Pandanaran (UNPANDA)
+							Universitas Panda Raya (UNPANDA)
 						</h3>
 						<p className="text-xs text-slate-500">
 							Kode Perguruan Tinggi:{" "}
 							<span className="font-mono font-semibold">061032</span> •
-							Akreditasi BAN-PT: Baik Sekali
+							Akreditasi BAN-PT: Unggul
 						</p>
 						<button
 							type="button"
@@ -60,7 +60,7 @@ export const Pengaturan: React.FC = () => {
 							<input
 								id="univ-name"
 								type="text"
-								defaultValue="Universitas Pandanaran"
+								defaultValue="Universitas Panda Raya"
 								className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-medium focus:outline-[#75834a]"
 							/>
 						</div>
@@ -121,7 +121,7 @@ export const Pengaturan: React.FC = () => {
 						<textarea
 							id="univ-address"
 							rows={2}
-							defaultValue="Jl. Pandanaran No. 100, Kota Semarang, Jawa Tengah 50241"
+							defaultValue="Kawasan Kampus Terpadu UNPANDA, Jl. Raya Panda Hijau No. 1"
 							className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-medium focus:outline-[#75834a]"
 						/>
 					</div>

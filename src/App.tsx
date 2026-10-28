@@ -9,6 +9,7 @@ import { ManajemenUser } from "./pages/admin/ManajemenUser";
 import { Pengaturan } from "./pages/admin/Pengaturan";
 import { Penjadwalan } from "./pages/admin/Penjadwalan";
 import { PeriodeAkademik } from "./pages/admin/PeriodeAkademik";
+import { CampusMapPage } from "./pages/CampusMapPage";
 import { AbsensiDosen } from "./pages/dosen/Absensi";
 import { DosenDashboard } from "./pages/dosen/DosenDashboard";
 import { DosenProfil } from "./pages/dosen/DosenProfil";
@@ -25,7 +26,7 @@ import { NilaiPage } from "./pages/mahasiswa/NilaiPage";
 import { PresensiPage } from "./pages/mahasiswa/PresensiPage";
 import type { Role } from "./types";
 
-// Map between 21 Figma screens and internal routes
+// Map between 21 Figma screens + Campus Map and internal routes
 const SCREEN_MAPPING: Record<
 	number,
 	{ path: string; role: Role; title: string }
@@ -59,6 +60,11 @@ const SCREEN_MAPPING: Record<
 		title: "Rekapitulasi Presensi",
 	},
 	21: { path: "mhs-profil", role: "Mahasiswa", title: "Profil Mahasiswa" },
+	22: {
+		path: "campus-map",
+		role: "Mahasiswa",
+		title: "Peta Kampus Interaktif UNPANDA",
+	},
 };
 
 function getInitialState() {
@@ -120,10 +126,11 @@ export const App: React.FC = () => {
 	const currentScreenEntry = Object.values(SCREEN_MAPPING).find(
 		(val) => val.path === currentPath,
 	);
-	const pageTitle = currentScreenEntry?.title || "Sistem Akademik UNPANDA";
+	const pageTitle =
+		currentScreenEntry?.title || "Sistem Informasi Akademik UNPANDA";
 
 	useEffect(() => {
-		document.title = `${pageTitle} · UNPANDA`;
+		document.title = `${pageTitle} · Universitas Panda Raya`;
 	}, [pageTitle]);
 
 	// Handle Login Action
@@ -201,6 +208,10 @@ export const App: React.FC = () => {
 				return <PresensiPage />;
 			case "mhs-profil":
 				return <MahasiswaProfil />;
+
+			// Interactive Campus Map Route
+			case "campus-map":
+				return <CampusMapPage />;
 
 			default:
 				return <MahasiswaDashboard onNavigate={navigateTo} />;

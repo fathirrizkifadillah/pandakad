@@ -122,9 +122,13 @@ export const DosenDashboard: React.FC<DosenDashboardProps> = ({
 							<p className="text-xs text-slate-500 mt-1">{kelas.prodi}</p>
 							<div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
 								<span>{kelas.jumlahMahasiswa} Mahasiswa</span>
-								<span className="font-medium text-[#75834a]">
-									{kelas.ruang}
-								</span>
+								<button
+									type="button"
+									onClick={() => onNavigate("campus-map")}
+									className="font-medium text-[#75834a] hover:underline flex items-center gap-1 cursor-pointer"
+								>
+									<span>📍 {kelas.ruang}</span>
+								</button>
 							</div>
 							<div className="mt-3 flex items-center gap-2">
 								<Button

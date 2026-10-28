@@ -144,13 +144,22 @@ export const MahasiswaDashboard: React.FC<MahasiswaDashboardProps> = ({
 									<p className="text-xs text-slate-600 mt-1">
 										Dosen: <span className="font-medium">{jdw.dosen}</span>
 									</p>
-									<div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
-										<span className="flex items-center gap-1 text-slate-700 font-medium">
-											<Clock className="w-3.5 h-3.5 text-[#75834a]" />
-											{jdw.jam}
-										</span>
-										<span>•</span>
-										<span>Ruang: {jdw.ruang}</span>
+									<div className="flex items-center justify-between mt-2 text-xs text-slate-500">
+										<div className="flex items-center gap-2 text-xs">
+											<span className="flex items-center gap-1 text-slate-700 font-medium">
+												<Clock className="w-3.5 h-3.5 text-[#75834a]" />
+												{jdw.jam}
+											</span>
+											<span>•</span>
+											<span>Ruang: {jdw.ruang}</span>
+										</div>
+										<button
+											type="button"
+											onClick={() => onNavigate("campus-map")}
+											className="text-[11px] font-semibold text-[#75834a] hover:text-[#566432] hover:underline flex items-center gap-1 cursor-pointer"
+										>
+											<span>🗺️ Denah</span>
+										</button>
 									</div>
 								</div>
 							</div>
