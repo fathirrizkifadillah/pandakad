@@ -1,0 +1,22 @@
+{
+	"name": "pandakad",
+	"version": "1.0.0",
+	"description": "Frontend statis dari desain Figma. Semua 21 artboard ditampilkan sebagai hasil render langsung dari file `.fig`, sehingga detail visual seperti ikon, teks, dan logo mengikuti sumbernya.",
+	"main": "app.js",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview",
+		"format": "biome format --write .",
+		"lint": "biome check ."
+	},
+	"bugs": {
+		"url": "https://github.com/fathirrizkifadillah/pandakad/issues"
+	},
+	"homepage": "https://github.com/fathirrizkifadillah/pandakad#readme",
+	"devDependencies": {
+		"@biomejs/biome": "2.6.3",
+		"vite": "^8.3.5"
+	}
+}
