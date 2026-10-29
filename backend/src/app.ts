@@ -9,6 +9,7 @@ import { logger } from "./lib/logger.js";
 import { prisma } from "./lib/prisma.js";
 import { authenticate, requireRole } from "./middlewares/auth.js";
 import { errorHandler, NotFoundError } from "./middlewares/errorHandler.js";
+import { attendanceRouter } from "./modules/attendance/attendance.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { classesRouter } from "./modules/classes/classes.routes.js";
 import { gradesRouter } from "./modules/grades/grades.routes.js";
@@ -76,6 +77,7 @@ app.use("/api/v1/master", masterRouter);
 app.use("/api/v1/classes", classesRouter);
 app.use("/api/v1/krs", krsRouter);
 app.use("/api/v1/grades", gradesRouter);
+app.use("/api/v1/attendance", attendanceRouter);
 
 // Test Endpoints for RBAC Verification (Hanya aktif pada mode test)
 if (env.NODE_ENV === "test") {

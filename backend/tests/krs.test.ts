@@ -12,7 +12,6 @@ describe("Milestone 4: KRS (Kartu Rencana Studi) Suite", () => {
 	let activeTermId = "";
 	let nadyaStudentProfileId = "";
 	let if3106ClassId = ""; // Pemrograman Web Lanjut
-	let if3107ClassId = ""; // Pengolahan Bahasa Alami (NLP)
 	let fullQuotaClassId = "";
 	let collisionClassId = "";
 
@@ -77,10 +76,13 @@ describe("Milestone 4: KRS (Kartu Rencana Studi) Suite", () => {
 		});
 		if3106ClassId = if3106?.id || "";
 
-		const if3107 = await prisma.class.findFirst({
-			where: { code: "IF3107-A", academicTermId: activeTermId },
-		});
-		if3107ClassId = if3107?.id || "";
+		// Reset kuota kelas IF3106-A agar bersih saat uji coba
+		if (if3106ClassId) {
+			await prisma.class.update({
+				where: { id: if3106ClassId },
+				data: { enrolledCount: 20 },
+			});
+		}
 
 		// Buat kelas khusus kuota penuh untuk uji Concurrency / Quota limit
 		const courseNlp = await prisma.course.findFirst({
@@ -328,7 +330,7 @@ describe("Milestone 4: KRS (Kartu Rencana Studi) Suite", () => {
 			await request(app)
 				.post("/api/v1/krs/enroll")
 				.set("Authorization", `Bearer ${mahasiswaNadyaToken}`)
-				.send({ classId: if3107ClassId });
+				.send({ classId: if3106ClassId });
 		});
 
 		it("Mahasiswa mengajukan KRS draf ke DPA (Submit)", async () => {

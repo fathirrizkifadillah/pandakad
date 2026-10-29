@@ -174,8 +174,9 @@ model Class {
   createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime        @updatedAt @map("updated_at") @db.Timestamptz
 
-  schedules   Schedule[]
-  enrollments Enrollment[]
+  schedules          Schedule[]
+  enrollments        Enrollment[]
+  attendanceSessions AttendanceSession[]
 
   @@unique([academicTermId, code])
   @@index([academicTermId])
@@ -218,7 +219,8 @@ model StudentProfile {
   createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz
   updatedAt         DateTime         @updatedAt @map("updated_at") @db.Timestamptz
 
-  enrollments Enrollment[]
+  enrollments       Enrollment[]
+  attendanceRecords AttendanceRecord[]
 
   @@index([nim])
   @@index([studyProgramId])
@@ -310,4 +312,40 @@ model GradeAuditLog {
   @@index([gradeId])
   @@index([changedById])
   @@map("grade_audit_logs")
+}
+
+model AttendanceSession {
+  id            String   @id @default(uuid())
+  classId       String   @map("class_id")
+  class         Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  sessionNumber Int      @map("session_number") // 1 s.d. 16
+  date          DateTime @db.Date
+  startTime     String?  @map("start_time") // e.g. "08:00"
+  endTime       String?  @map("end_time") // e.g. "10:30"
+  topic         String?
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  records AttendanceRecord[]
+
+  @@unique([classId, sessionNumber])
+  @@index([classId])
+  @@map("attendance_sessions")
+}
+
+model AttendanceRecord {
+  id        String            @id @default(uuid())
+  sessionId String            @map("session_id")
+  session   AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId String            @map("student_id")
+  student   StudentProfile    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status    String            @default("Hadir") // "Hadir" | "Izin" | "Sakit" | "Alpa"
+  notes     String?
+  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([sessionId, studentId])
+  @@index([studentId])
+  @@index([sessionId])
+  @@map("attendance_records")
 }

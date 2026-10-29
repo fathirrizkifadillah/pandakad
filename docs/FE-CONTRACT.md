@@ -297,4 +297,57 @@ Dokumen ini mendefinisikan kontrak data resmi antara antarmuka pengguna frontend
 
 ---
 
-*(Kontrak akan terus diperbarui secara inkremental pada milestone berikutnya: M6 Presensi, M7 Dashboard & Laporan).*
+## 7. Modul Presensi & Absensi Perkuliahan (Milestone 6)
+
+### A. Alur Dosen & Admin (Pencatatan Presensi Sesi 1 - 16)
+* `POST /api/v1/attendance/session` (Khusus Dosen Pengampu & Admin):
+  - Membuka atau memperbarui catatan kehadiran pada sesi pertemuan tertentu (pertemuan 1 s.d. 16).
+  - Skema Input:
+    ```json
+    {
+      "classId": "uuid-class",
+      "sessionNumber": 5, // Rentang 1 s.d. 16
+      "date": "2026-10-12",
+      "startTime": "08:00",
+      "endTime": "10:30",
+      "topic": "Algoritma Machine Learning Lanjut",
+      "records": [
+        {
+          "studentId": "uuid-student",
+          "status": "Hadir", // "Hadir" | "Izin" | "Sakit" | "Alpa"
+          "notes": "Hadir tepat waktu"
+        }
+      ]
+    }
+    ```
+* `GET /api/v1/attendance/class/:classId/session/:sessionNumber` (Khusus Dosen Pengampu & Admin):
+  - Mengembalikan data sesi pertemuan beserta status absensi masing-masing mahasiswa yang terdaftar di kelas.
+* `GET /api/v1/attendance/class/:classId/recap` (Khusus Dosen Pengampu & Admin):
+  - Mengembalikan rekapitulasi kehadiran kelas secara agregat: total pertemuan terlaksana, jumlah hadir, izin, sakit, alpa per mahasiswa, persentase kehadiran, dan status kelayakan UAS (`Memenuhi Syarat` jika $\ge 75\%$, `Tidak Memenuhi Syarat` jika $< 75\%$).
+
+### B. Alur Mahasiswa (Rekapitulasi Presensi Kuliah)
+* `GET /api/v1/attendance/my-recap?academicTermId=` (Khusus Mahasiswa):
+  - Mengembalikan rekap kehadiran mahasiswa untuk seluruh mata kuliah yang diambil pada semester aktif:
+    ```json
+    [
+      {
+        "id": "uuid-enrollment",
+        "kode": "IF3101",
+        "matkul": "Kecerdasan Buatan & Machine Learning",
+        "sks": 3,
+        "dosen": "Dr. Ir. Budi Santoso, M.Kom.",
+        "totalPertemuan": 14,
+        "hadir": 13,
+        "izin": 1,
+        "sakit": 0,
+        "alpa": 0,
+        "persentase": 93,
+        "isEligible": true,
+        "status": "Memenuhi Syarat"
+      }
+    ]
+    ```
+
+---
+
+*(Kontrak akan terus diperbarui secara inkremental pada milestone berikutnya: M7 Dashboard & Laporan, M8 Hardening & Swagger, M9 Integrasi Frontend).*
