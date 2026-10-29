@@ -1,4 +1,5 @@
 import {
+	Compass,
 	Eye,
 	EyeOff,
 	Lock,
@@ -36,21 +37,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 			placeholder: "Contoh: 22010189",
 			defaultId: "22010189",
 			greeting:
-				"Halo mahasiswa kebanggaan UNPANDA! Masuk dulu yuk buat cek jadwal, isi KRS, atau pantau IPK semester ini 🎓",
+				"Halo mahasiswa kebanggaan UNPANDA! Masuk untuk cek jadwal kuliah, isi KRS, atau pantau IPK semester ini.",
 		},
 		Dosen: {
 			label: "NIDN / NIP Dosen",
 			placeholder: "Contoh: 0412087501",
 			defaultId: "0412087501",
 			greeting:
-				"Selamat datang Bapak/Ibu Dosen UNPANDA! Siap membimbing dan mencerdaskan calon pemimpin masa depan? 📚",
+				"Selamat datang Bapak/Ibu Dosen UNPANDA. Portal siap digunakan untuk mengelola perkuliahan dan penilaian akademik.",
 		},
 		Admin: {
 			label: "NIP / Akun Admin BAAK",
 			placeholder: "Contoh: 198504152010011002",
 			defaultId: "198504152010011002",
 			greeting:
-				"Halo Administrator BAAK! Pusat kendali data akademik Universitas Panda Raya siap dikelola 🛡️",
+				"Selamat datang Administrator BAAK. Pusat kendali data akademik Universitas Panda Raya siap dikelola.",
 		},
 	};
 
@@ -84,7 +85,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 			<div className="w-full max-w-6xl bg-white rounded-3xl border border-[#e2e8f0] shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
 				{/* Left Panel: Campus Building Slideshow */}
 				<div className="lg:col-span-6 xl:col-span-7 h-80 sm:h-96 lg:h-auto border-b lg:border-b-0 lg:border-r border-[#e2e8f0]">
-					<CampusSlideshow onExploreMap={() => setIsMapOpen(true)} />
+					<CampusSlideshow />
 				</div>
 
 				{/* Right Panel: Academic Login Form */}
@@ -96,14 +97,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 								<img
 									src="/assets/logo_unpanda.png"
 									alt="Logo UNPANDA"
-									className="w-9 h-9 object-contain"
+									className="w-8 h-8 object-contain"
 								/>
 								<div>
-									<h1 className="font-extrabold text-sm text-slate-900 tracking-tight leading-none">
-										UNIVERSITAS PANDA RAYA
+									<h1 className="font-black text-base text-slate-900 tracking-tight leading-none">
+										PANDAKAD
 									</h1>
 									<span className="text-[10px] text-[#75834a] font-bold">
-										PORTAL AKADEMIK
+										SISTEM AKADEMIK UNPANDA
 									</span>
 								</div>
 							</div>
@@ -117,17 +118,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 							</button>
 						</div>
 
-						{/* Greeting & Subtitle */}
+						{/* Brand Header: Clean "PANDAKAD" */}
 						<div className="mb-6">
-							<span className="text-xs font-bold text-[#75834a] uppercase tracking-wider block mb-1">
-								Sistem Informasi Akademik
-							</span>
-							<h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-								Masuk ke Akun Anda
-							</h2>
-							<p className="text-xs text-slate-500 mt-1 leading-relaxed">
-								Silakan pilih peran dan masukkan kredensial resmi Universitas
-								Panda Raya.
+							<div className="flex items-center gap-2">
+								<h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+									PANDAKAD
+								</h2>
+								<span className="w-2.5 h-2.5 rounded-full bg-[#75834a]" />
+							</div>
+							<p className="text-xs text-slate-500 mt-1 font-medium">
+								Portal Layanan Akademik Terpadu
 							</p>
 						</div>
 
@@ -276,22 +276,22 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 						<button
 							type="button"
 							onClick={() => setIsMapOpen(true)}
-							className="w-full flex items-center justify-between p-2.5 rounded-2xl bg-gradient-to-r from-[#75834a]/10 via-amber-50 to-[#d2ae54]/15 border border-[#75834a]/20 hover:border-[#75834a]/40 text-xs text-slate-800 font-semibold transition-all cursor-pointer shadow-2xs group active:scale-[0.99]"
+							className="w-full flex items-center justify-between p-2.5 rounded-2xl bg-[#f6f5ef] hover:bg-[#eceae0] border border-[#e2e8f0] text-xs text-slate-800 font-semibold transition-all cursor-pointer shadow-2xs group active:scale-[0.99]"
 						>
-							<div className="flex items-center gap-2">
-								<span className="text-base group-hover:scale-110 transition-transform">
-									🗺️
-								</span>
+							<div className="flex items-center gap-2.5">
+								<div className="w-8 h-8 rounded-xl bg-white border border-[#e2e8f0] text-[#75834a] flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+									<Compass className="w-4 h-4 text-[#75834a]" />
+								</div>
 								<div className="text-left">
-									<span className="font-bold text-[#566432] block text-xs">
+									<span className="font-bold text-slate-800 block text-xs">
 										Jelajahi Peta Kampus Interaktif
 									</span>
 									<span className="text-[10px] text-slate-500 font-normal">
-										Lihat denah isometrik gedung, lab, dan fasilitas UNPANDA
+										Denah isometrik gedung, lab, dan fasilitas UNPANDA
 									</span>
 								</div>
 							</div>
-							<span className="text-[11px] font-bold text-[#75834a] bg-white px-2 py-1 rounded-lg border border-[#75834a]/20 shadow-2xs">
+							<span className="text-[11px] font-bold text-[#75834a] bg-white px-2 py-1 rounded-lg border border-[#e2e8f0] shadow-2xs">
 								Buka Peta →
 							</span>
 						</button>

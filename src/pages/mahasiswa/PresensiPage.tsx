@@ -17,7 +17,7 @@ export const PresensiPage: React.FC = () => {
 				</p>
 			</div>
 
-			<PandaMascot message="Kehadiran kamu rata-rata di atas 90%, keren banget! Pertahankan terus biar ga kena cegat waktu ujian semester ya 🐼" />
+			<PandaMascot message="Kehadiran kamu rata-rata di atas 90%. Pertahankan kedisiplinan belajar ini untuk memenuhi syarat ujian semester." />
 
 			<Card padded={false} className="overflow-hidden">
 				<div className="overflow-x-auto">

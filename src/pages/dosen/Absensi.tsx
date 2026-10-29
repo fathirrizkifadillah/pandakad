@@ -1,4 +1,4 @@
-import { Save } from "lucide-react";
+import { CheckCircle, Save } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { Button } from "../../components/ui/Button";
@@ -27,7 +27,7 @@ export const AbsensiDosen: React.FC = () => {
 
 	const handleSave = () => {
 		setToast(
-			`Presensi Pertemuan ${pertemuan} berhasil disimpan & disinkronkan ke portal BAAK! 🐼✅`,
+			`Presensi Pertemuan ${pertemuan} berhasil disimpan dan disinkronkan ke portal BAAK.`,
 		);
 		setTimeout(() => setToast(null), 3500);
 	};
@@ -38,7 +38,7 @@ export const AbsensiDosen: React.FC = () => {
 		<div className="space-y-6">
 			{toast && (
 				<div className="fixed top-24 right-6 z-50 max-w-md bg-slate-900 text-white text-xs sm:text-sm px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 border border-slate-700 animate-fade-in">
-					<span className="text-base">🐼</span>
+					<CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
 					<p className="flex-1 font-medium">{toast}</p>
 				</div>
 			)}

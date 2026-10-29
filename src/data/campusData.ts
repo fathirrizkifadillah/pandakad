@@ -297,10 +297,10 @@ export const CAMPUS_LANDMARKS: CampusLandmark[] = [
 ];
 
 export const ACADEMIC_FACTS = [
-	"UNPANDA menduduki peringkat Top 5 Kampus Hijau Berkelanjutan di Indonesia! 🌿",
-	"Seluruh gedung UNPANDA menggunakan sistem pencahayaan alami hemat energi 💡",
-	"KRS Online UNPANDA terintegrasi otomatis dengan transkrip nilai dan sistem MBKM 🎓",
-	"Perpustakaan Pustaka Panda memiliki akses ke jutaan jurnal internasional gratis untuk mahasiswa 📚",
-	"Panda Hub buka hingga pukul 22:00 WIB untuk ruang diskusi kelompok dan inkubasi startup 🚀",
-	"Tahukah kamu? Maskot Panda UNPANDA memakai caping tradisional sebagai simbol kearifan lokal & kerja keras! 🎋",
+	"UNPANDA menduduki peringkat Top 5 Kampus Hijau Berkelanjutan di Indonesia.",
+	"Seluruh gedung UNPANDA menggunakan sistem pencahayaan alami hemat energi.",
+	"KRS Online UNPANDA terintegrasi otomatis dengan transkrip nilai dan sistem MBKM.",
+	"Perpustakaan Pustaka Panda memiliki akses ke jutaan jurnal internasional gratis untuk mahasiswa.",
+	"Panda Hub buka hingga pukul 22:00 WIB untuk ruang diskusi kelompok dan inkubasi startup.",
+	"Maskot Panda UNPANDA memakai caping tradisional sebagai simbol kearifan lokal dan dedikasi akademik.",
 ];

@@ -98,7 +98,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 			</div>
 
 			{/* Mascot System Alert */}
-			<PandaMascot message="Semua server portal dan database UNPANDA beroperasi prima! Masa pengisian KRS tersisa 2 hari lagi sebelum penutupan otomatis 🐼⚡" />
+			<PandaMascot message="Semua server portal dan database UNPANDA beroperasi prima. Masa pengisian KRS tersisa 2 hari sebelum batas penutupan." />
 
 			{/* Quick Action Modules */}
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

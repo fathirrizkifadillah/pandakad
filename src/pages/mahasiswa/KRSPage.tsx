@@ -1,4 +1,4 @@
-import { Plus, Send, Trash2 } from "lucide-react";
+import { CheckCircle, Plus, Send, Trash2 } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { Badge } from "../../components/ui/Badge";
@@ -34,7 +34,7 @@ export const KRSPage: React.FC = () => {
 		}
 		if (totalSKS + course.sks > maxSKS) {
 			showToast(
-				`Waduh, jatah SKS kamu cuma ${maxSKS} SKS! Kurangi matkul lain dulu ya 🐼`,
+				`Batas maksimal SKS yang dapat diambil adalah ${maxSKS} SKS. Kurangi mata kuliah lain terlebih dahulu.`,
 			);
 			return;
 		}
@@ -46,7 +46,7 @@ export const KRSPage: React.FC = () => {
 		};
 		setSelectedKRS([...selectedKRS, newItem]);
 		showToast(
-			`Asyik! Matkul "${course.nama}" (+${course.sks} SKS) berhasil ditambahkan!`,
+			`Mata kuliah "${course.nama}" (+${course.sks} SKS) berhasil ditambahkan.`,
 		);
 	};
 
@@ -54,7 +54,7 @@ export const KRSPage: React.FC = () => {
 		const course = selectedKRS.find((c) => c.id === courseId);
 		setSelectedKRS(selectedKRS.filter((item) => item.id !== courseId));
 		if (course) {
-			showToast(`Matkul "${course.nama}" telah dihapus dari KRS.`);
+			showToast(`Mata kuliah "${course.nama}" telah dihapus dari KRS.`);
 		}
 	};
 
@@ -67,9 +67,7 @@ export const KRSPage: React.FC = () => {
 		setSelectedKRS(
 			selectedKRS.map((item) => ({ ...item, status: "Menunggu Persetujuan" })),
 		);
-		showToast(
-			"KRS berhasil diajukan ke Dosen Pembimbing Akademik (DPA)! Tinggal tunggu konfirmasi ya 🚀",
-		);
+		showToast("KRS berhasil diajukan ke Dosen Pembimbing Akademik (DPA).");
 	};
 
 	// Filter available courses from catalog that are not yet selected
@@ -82,7 +80,7 @@ export const KRSPage: React.FC = () => {
 			{/* Toast Notification */}
 			{toastMessage && (
 				<div className="fixed top-24 right-6 z-50 max-w-md bg-slate-900 text-white text-xs sm:text-sm px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-fade-in border border-slate-700">
-					<span className="text-base">🐼</span>
+					<CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
 					<p className="flex-1 font-medium">{toastMessage}</p>
 				</div>
 			)}
@@ -158,7 +156,7 @@ export const KRSPage: React.FC = () => {
 
 			{/* Mascot note */}
 			<PandaMascot
-				message={`Kamu sudah memilih ${selectedKRS.length} mata kuliah (${totalSKS} SKS). Pastikan jadwal tidak bentrok dan konsultasikan dengan ${student.dpa} ya! 🐼`}
+				message={`Kamu sudah memilih ${selectedKRS.length} mata kuliah (${totalSKS} SKS). Pastikan jadwal tidak bentrok dan konsultasikan rencana studi dengan ${student.dpa}.`}
 			/>
 
 			{/* Selected Courses Table */}

@@ -64,7 +64,7 @@ export const PandaLoadingScreen: React.FC<PandaLoadingScreenProps> = ({
 				<div className="bg-white/80 border border-[#e2e8f0] rounded-2xl p-3 w-full text-left transition-all duration-300">
 					<div className="flex items-center gap-1.5 mb-1">
 						<span className="text-[10px] font-extrabold text-[#75834a] uppercase tracking-wider">
-							💡 Catatan Akademik UNPANDA
+							Catatan Akademik UNPANDA
 						</span>
 					</div>
 					<p className="text-xs text-slate-600 leading-relaxed font-normal">

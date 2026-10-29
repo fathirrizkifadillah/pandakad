@@ -70,14 +70,14 @@ export const InputNilai: React.FC = () => {
 	};
 
 	const handleSaveDraft = () => {
-		setToastMessage("Nilai berhasil disimpan sebagai Draft lokal! 💾");
+		setToastMessage("Nilai berhasil disimpan sebagai draf lokal.");
 		setTimeout(() => setToastMessage(null), 3500);
 	};
 
 	const handleFinalize = () => {
 		setStudents((prev) => prev.map((s) => ({ ...s, status: "Final" })));
 		setToastMessage(
-			"Nilai resmi dikunci & difinalisasi ke sistem BAAK UNPANDA! Mahasiswa kini dapat melihat nilainya 🎉",
+			"Nilai resmi dikunci dan difinalisasi ke sistem BAAK UNPANDA. Mahasiswa kini dapat melihat nilainya.",
 		);
 		setTimeout(() => setToastMessage(null), 4000);
 	};
@@ -87,7 +87,7 @@ export const InputNilai: React.FC = () => {
 			{/* Toast Notification */}
 			{toastMessage && (
 				<div className="fixed top-24 right-6 z-50 max-w-md bg-slate-900 text-white text-xs sm:text-sm px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 border border-slate-700 animate-fade-in">
-					<span className="text-base">🐼</span>
+					<CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
 					<p className="flex-1 font-medium">{toastMessage}</p>
 				</div>
 			)}
@@ -128,7 +128,7 @@ export const InputNilai: React.FC = () => {
 			</div>
 
 			{/* Mascot note */}
-			<PandaMascot message="Formula kalkulasi otomatis: 10% Presensi + 20% Tugas + 35% UTS + 35% UAS. Silakan edit angka di kolom input, nilai akhir & huruf langsung terhitung seketika 🐼📊" />
+			<PandaMascot message="Formula kalkulasi otomatis: 10% Presensi + 20% Tugas + 35% UTS + 35% UAS. Silakan edit angka di kolom input, nilai akhir dan huruf langsung terhitung seketika." />
 
 			{/* Class filter and summary */}
 			<Card padded={false} className="overflow-hidden">

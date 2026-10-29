@@ -1,11 +1,18 @@
 import {
+	BookOpen,
 	Building,
+	Building2,
 	Check,
 	Clock,
+	GraduationCap,
+	Landmark,
 	Layers,
 	MapPin,
 	RotateCcw,
 	Search,
+	Trees,
+	Trophy,
+	Users,
 	X,
 	ZoomIn,
 	ZoomOut,
@@ -30,14 +37,18 @@ type MapCategory =
 	| "olahraga-seni"
 	| "ibadah";
 
-const CATEGORIES: { id: MapCategory; label: string; icon: string }[] = [
-	{ id: "semua", label: "Semua Gedung", icon: "🏛️" },
-	{ id: "fakultas", label: "Fakultas", icon: "🎓" },
-	{ id: "akademik", label: "Fasilitas Akademik", icon: "📖" },
-	{ id: "umum", label: "Fasilitas Umum", icon: "👥" },
-	{ id: "terbuka", label: "Ruang Terbuka", icon: "🌳" },
-	{ id: "olahraga-seni", label: "Olahraga & Seni", icon: "⚽" },
-	{ id: "ibadah", label: "Ibadah & Rohani", icon: "🕌" },
+const CATEGORIES: {
+	id: MapCategory;
+	label: string;
+	icon: React.ComponentType<{ className?: string }>;
+}[] = [
+	{ id: "semua", label: "Semua Gedung", icon: Building2 },
+	{ id: "fakultas", label: "Fakultas", icon: GraduationCap },
+	{ id: "akademik", label: "Fasilitas Akademik", icon: BookOpen },
+	{ id: "umum", label: "Fasilitas Umum", icon: Users },
+	{ id: "terbuka", label: "Ruang Terbuka", icon: Trees },
+	{ id: "olahraga-seni", label: "Olahraga & Seni", icon: Trophy },
+	{ id: "ibadah", label: "Ibadah & Rohani", icon: Landmark },
 ];
 
 export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
@@ -101,7 +112,7 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 		"wave" | "happy" | "confused" | "idle"
 	>("wave");
 	const [mascotBubble, setMascotBubble] = useState(
-		"Halo! Klik gedung di denah untuk info ruangan & lab!",
+		"Halo! Silakan klik gedung pada denah untuk info ruangan & lab.",
 	);
 
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -126,12 +137,12 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 		if (searchQuery.trim().length > 0 && filteredLandmarks.length === 0) {
 			setMascotMood("confused");
 			setMascotBubble(
-				`Oops! Gedung "${searchQuery}" tidak ditemukan. Coba kata kunci lain yuk! 🎋`,
+				`Gedung "${searchQuery}" tidak ditemukan. Coba kata kunci lain.`,
 			);
 		} else if (searchQuery.trim().length > 0) {
 			setMascotMood("happy");
 			setMascotBubble(
-				`Ditemukan ${filteredLandmarks.length} lokasi sesuai pencarianmu! ✨`,
+				`Ditemukan ${filteredLandmarks.length} lokasi sesuai pencarian Anda.`,
 			);
 		}
 	}, [searchQuery, filteredLandmarks.length]);
@@ -142,9 +153,7 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 			setSelectedLandmark(landmark);
 			setIsDetailOpen(true);
 			setMascotMood("happy");
-			setMascotBubble(
-				`Kamu sedang melihat ${landmark.name} (${landmark.code})! 🏢✨`,
-			);
+			setMascotBubble(`Informasi detail ${landmark.name} (${landmark.code}).`);
 
 			// Calculate center offset on the canvas (coords are in 0-100 percentage)
 			// Normalized center is (50, 50)
@@ -361,7 +370,7 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 											}`}
 										>
 											<div className="flex items-center gap-2">
-												<span>{cat.icon}</span>
+												<cat.icon className="w-3.5 h-3.5 shrink-0" />
 												<span>{cat.label}</span>
 											</div>
 											{isActive && (
@@ -464,16 +473,20 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 													: "bg-white/95 group-hover:bg-white text-slate-800 border-slate-300 group-hover:border-[#75834a]"
 											}`}
 										>
-											<span className="text-xs">
-												{landmark.category === "fakultas"
-													? "🎓"
-													: landmark.category === "akademik"
-														? "📖"
-														: landmark.category === "olahraga-seni"
-															? "⚽"
-															: landmark.category === "ibadah"
-																? "🕌"
-																: "🏢"}
+											<span className="text-xs shrink-0 flex items-center">
+												{landmark.category === "fakultas" ? (
+													<GraduationCap className="w-3.5 h-3.5" />
+												) : landmark.category === "akademik" ? (
+													<BookOpen className="w-3.5 h-3.5" />
+												) : landmark.category === "olahraga-seni" ? (
+													<Trophy className="w-3.5 h-3.5" />
+												) : landmark.category === "terbuka" ? (
+													<Trees className="w-3.5 h-3.5" />
+												) : landmark.category === "ibadah" ? (
+													<Landmark className="w-3.5 h-3.5" />
+												) : (
+													<Building2 className="w-3.5 h-3.5" />
+												)}
 											</span>
 											<span className="text-[11px] font-bold tracking-tight">
 												{landmark.name}

@@ -30,11 +30,11 @@ const MOOD_ASSETS: Record<PandaMood, string> = {
 };
 
 const MOOD_SOUNDS = [
-	"🎋 Semangat Belajar!",
-	"✨ UNPANDA Hebat!",
-	"🌱 Tetap Jaga Kesehatan!",
-	"🎓 Raih Prestasi Terbaik!",
-	"☕ Jangan Lupa Istirahat!",
+	"Semangat belajar dan raih prestasi terbaik!",
+	"UNPANDA - Kampus hijau, cerdas, dan berkelanjutan.",
+	"Tetap jaga kesehatan dan fokus pada tujuan akademik.",
+	"Raih prestasi terbaik bersama sivitas akademika UNPANDA.",
+	"Jangan lupa istirahat yang cukup di sela perkuliahan.",
 ];
 
 export const PandaMascot: React.FC<PandaMascotProps> = ({

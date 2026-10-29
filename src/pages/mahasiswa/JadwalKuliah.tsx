@@ -54,7 +54,7 @@ export const JadwalKuliah: React.FC = () => {
 							{classesThisDay.length === 0 ? (
 								<div className="p-6 text-center text-xs text-slate-400">
 									Tidak ada jadwal perkuliahan pada hari ini. Waktu luang untuk
-									mandiri! 🐼
+									belajar mandiri.
 								</div>
 							) : (
 								<div className="divide-y divide-slate-100">

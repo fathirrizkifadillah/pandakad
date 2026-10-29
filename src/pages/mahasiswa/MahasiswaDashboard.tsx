@@ -6,6 +6,7 @@ import {
 	CheckCircle2,
 	Clock,
 	GraduationCap,
+	MapPin,
 	Sparkles,
 } from "lucide-react";
 import type React from "react";
@@ -94,7 +95,7 @@ export const MahasiswaDashboard: React.FC<MahasiswaDashboardProps> = ({
 
 			{/* Mascot Insight Message */}
 			<PandaMascot
-				message={`IPK kamu sekarang ${student.ipk}, keren banget! Semester 5 ini matkulnya seru-seru lho. Jaga ritme belajar dan jangan lupa istirahat ya 🐼✨`}
+				message={`Indeks Prestasi Kumulatif kamu saat ini adalah ${student.ipk}. Pertahankan ritme belajar dan kedisiplinan akademik semester ini.`}
 			/>
 
 			{/* Content Grid: Jadwal Hari Ini & Timeline Pengumuman */}
@@ -158,7 +159,8 @@ export const MahasiswaDashboard: React.FC<MahasiswaDashboardProps> = ({
 											onClick={() => onNavigate("campus-map")}
 											className="text-[11px] font-semibold text-[#75834a] hover:text-[#566432] hover:underline flex items-center gap-1 cursor-pointer"
 										>
-											<span>🗺️ Denah</span>
+											<MapPin className="w-3 h-3" />
+											<span>Denah</span>
 										</button>
 									</div>
 								</div>

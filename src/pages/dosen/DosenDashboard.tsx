@@ -3,6 +3,7 @@ import {
 	Award,
 	BookOpenCheck,
 	Calendar,
+	MapPin,
 	Users,
 } from "lucide-react";
 import type React from "react";
@@ -89,7 +90,7 @@ export const DosenDashboard: React.FC<DosenDashboardProps> = ({
 			</div>
 
 			{/* Mascot Insight Message */}
-			<PandaMascot message="Bapak/Ibu Dosen hebat! Hari ini ada 1 sesi kuliah 'Kecerdasan Buatan' di Lab AI. Jangan lupa absensi mahasiswa diinput sebelum jam 17:00 ya 🐼☕" />
+			<PandaMascot message="Hari ini terdapat 1 sesi perkuliahan Kecerdasan Buatan di Lab AI. Harap melakukan pencatatan presensi mahasiswa sebelum pukul 17:00 WIB." />
 
 			{/* Quick Access to Classes */}
 			<div className="space-y-4">
@@ -127,7 +128,8 @@ export const DosenDashboard: React.FC<DosenDashboardProps> = ({
 									onClick={() => onNavigate("campus-map")}
 									className="font-medium text-[#75834a] hover:underline flex items-center gap-1 cursor-pointer"
 								>
-									<span>📍 {kelas.ruang}</span>
+									<MapPin className="w-3.5 h-3.5" />
+									<span>{kelas.ruang}</span>
 								</button>
 							</div>
 							<div className="mt-3 flex items-center gap-2">

@@ -45,7 +45,7 @@ export const Pengaturan: React.FC = () => {
 				<form
 					onSubmit={(e) => {
 						e.preventDefault();
-						alert("Pengaturan institusi berhasil disimpan! 🐼💾");
+						alert("Pengaturan institusi berhasil disimpan.");
 					}}
 					className="mt-6 space-y-4 text-xs sm:text-sm"
 				>
