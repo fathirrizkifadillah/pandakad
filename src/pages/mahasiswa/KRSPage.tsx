@@ -1,6 +1,6 @@
 import { CheckCircle, Plus, Send, Trash2 } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
@@ -10,9 +10,12 @@ import {
 	mockKatalogMatkul,
 	mockUsers,
 } from "../../mock/academicData";
+import { studentApi } from "../../services/api/student";
 import type { KRSItem, MataKuliah } from "../../types";
 
 export const KRSPage: React.FC = () => {
+	const [catalogCourses, setCatalogCourses] =
+		useState<MataKuliah[]>(mockKatalogMatkul);
 	const [selectedKRS, setSelectedKRS] =
 		useState<KRSItem[]>(initialMahasiswaKRS);
 	const [isSubmitted, setIsSubmitted] = useState(false);
@@ -22,13 +25,46 @@ export const KRSPage: React.FC = () => {
 	const maxSKS = 24;
 	const totalSKS = selectedKRS.reduce((sum, item) => sum + item.sks, 0);
 
+	// Muat data riil dari backend REST API PANDAKAD
+	useEffect(() => {
+		const loadKrsData = async () => {
+			try {
+				const [myKrs, eligible] = await Promise.all([
+					studentApi.getMyKrs(),
+					studentApi.getEligibleClasses(),
+				]);
+				if (myKrs && myKrs.length > 0) {
+					setSelectedKRS(myKrs);
+					if (
+						myKrs.some(
+							(k) =>
+								k.status === "Menunggu Persetujuan" || k.status === "Disetujui",
+						)
+					) {
+						setIsSubmitted(true);
+					}
+				}
+				if (eligible && eligible.length > 0) {
+					setCatalogCourses(eligible);
+				}
+			} catch {
+				// Fallback ke data mock jika server offline
+			}
+		};
+		loadKrsData();
+	}, []);
+
 	const showToast = (msg: string) => {
 		setToastMessage(msg);
 		setTimeout(() => setToastMessage(null), 4000);
 	};
 
-	const handleAddCourse = (course: MataKuliah) => {
-		if (selectedKRS.some((item) => item.id === course.id)) {
+	const handleAddCourse = async (course: MataKuliah) => {
+		if (
+			selectedKRS.some(
+				(item) => item.id === course.id || item.kode === course.kode,
+			)
+		) {
 			showToast(`Matkul ${course.nama} sudah ada di KRS kamu!`);
 			return;
 		}
@@ -39,40 +75,78 @@ export const KRSPage: React.FC = () => {
 			return;
 		}
 
-		const newItem: KRSItem = {
-			...course,
-			status: "Draft",
-			tanggalDipilih: "Hari ini",
-		};
-		setSelectedKRS([...selectedKRS, newItem]);
-		showToast(
-			`Mata kuliah "${course.nama}" (+${course.sks} SKS) berhasil ditambahkan.`,
-		);
-	};
-
-	const handleRemoveCourse = (courseId: string) => {
-		const course = selectedKRS.find((c) => c.id === courseId);
-		setSelectedKRS(selectedKRS.filter((item) => item.id !== courseId));
-		if (course) {
-			showToast(`Mata kuliah "${course.nama}" telah dihapus dari KRS.`);
+		try {
+			await studentApi.enrollClass(course.id);
+			const refreshedKrs = await studentApi.getMyKrs();
+			setSelectedKRS(refreshedKrs);
+			showToast(
+				`Mata kuliah "${course.nama}" (+${course.sks} SKS) berhasil ditambahkan.`,
+			);
+		} catch (err: any) {
+			// Optimistic fallback jika server offline
+			const newItem: KRSItem = {
+				...course,
+				status: "Draft",
+				tanggalDipilih: "Hari ini",
+			};
+			setSelectedKRS([...selectedKRS, newItem]);
+			showToast(
+				err?.message ||
+					`Mata kuliah "${course.nama}" (+${course.sks} SKS) berhasil ditambahkan.`,
+			);
 		}
 	};
 
-	const handleSubmitKRS = () => {
+	const handleRemoveCourse = async (courseId: string) => {
+		const course = selectedKRS.find((c) => c.id === courseId);
+		try {
+			await studentApi.dropClass(courseId);
+			const refreshedKrs = await studentApi.getMyKrs();
+			setSelectedKRS(refreshedKrs);
+			if (course) {
+				showToast(`Mata kuliah "${course.nama}" telah dihapus dari KRS.`);
+			}
+		} catch {
+			setSelectedKRS(selectedKRS.filter((item) => item.id !== courseId));
+			if (course) {
+				showToast(`Mata kuliah "${course.nama}" telah dihapus dari KRS.`);
+			}
+		}
+	};
+
+	const handleSubmitKRS = async () => {
 		if (selectedKRS.length === 0) {
 			alert("Pilih minimal 1 mata kuliah sebelum mengajukan KRS!");
 			return;
 		}
-		setIsSubmitted(true);
-		setSelectedKRS(
-			selectedKRS.map((item) => ({ ...item, status: "Menunggu Persetujuan" })),
-		);
-		showToast("KRS berhasil diajukan ke Dosen Pembimbing Akademik (DPA).");
+
+		try {
+			await studentApi.submitKrs();
+			setIsSubmitted(true);
+			const refreshedKrs = await studentApi.getMyKrs();
+			setSelectedKRS(refreshedKrs);
+			showToast("KRS berhasil diajukan ke Dosen Pembimbing Akademik (DPA).");
+		} catch (err: any) {
+			setIsSubmitted(true);
+			setSelectedKRS(
+				selectedKRS.map((item) => ({
+					...item,
+					status: "Menunggu Persetujuan",
+				})),
+			);
+			showToast(
+				err?.message ||
+					"KRS berhasil diajukan ke Dosen Pembimbing Akademik (DPA).",
+			);
+		}
 	};
 
 	// Filter available courses from catalog that are not yet selected
-	const availableCourses = mockKatalogMatkul.filter(
-		(course) => !selectedKRS.some((item) => item.id === course.id),
+	const availableCourses = catalogCourses.filter(
+		(course) =>
+			!selectedKRS.some(
+				(item) => item.id === course.id || item.kode === course.kode,
+			),
 	);
 
 	return (

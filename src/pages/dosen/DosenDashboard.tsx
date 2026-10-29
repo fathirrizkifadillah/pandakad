@@ -7,12 +7,14 @@ import {
 	Users,
 } from "lucide-react";
 import type React from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { PandaMascot } from "../../components/ui/PandaMascot";
 import { StatCard } from "../../components/ui/StatCard";
 import { mockKelasDosen, mockUsers } from "../../mock/academicData";
+import { lecturerApi } from "../../services/api/lecturer";
 
 interface DosenDashboardProps {
 	onNavigate: (path: string) => void;
@@ -22,6 +24,36 @@ export const DosenDashboard: React.FC<DosenDashboardProps> = ({
 	onNavigate,
 }) => {
 	const lecturer = mockUsers.Dosen;
+	const [dashboardData, setDashboardData] = useState<any>(null);
+
+	// Muat data dashboard dosen riil dari API
+	useEffect(() => {
+		const loadLecturer = async () => {
+			try {
+				const res = await lecturerApi.getLecturerDashboard();
+				if (res) setDashboardData(res);
+			} catch {
+				// Gunakan data mock jika backend offline
+			}
+		};
+		loadLecturer();
+	}, []);
+
+	const currentLecturer = dashboardData?.lecturer || lecturer;
+	const stats = dashboardData?.stats;
+	const classesList =
+		dashboardData?.classes?.length > 0
+			? dashboardData.classes.map((cls: any) => ({
+					id: cls.id,
+					kelas: cls.code,
+					kode: cls.courseCode,
+					matkul: cls.courseName,
+					prodi: currentLecturer.prodi || "S1 Teknik Informatika",
+					sks: cls.sks,
+					ruang: cls.schedules?.[0]?.room || "Lab AI 302",
+					jumlahMahasiswa: cls.enrolledCount ?? 0,
+				}))
+			: mockKelasDosen;
 
 	return (
 		<div className="space-y-6">
@@ -35,14 +67,15 @@ export const DosenDashboard: React.FC<DosenDashboardProps> = ({
 						<Badge variant="olive">Dosen Tetap</Badge>
 					</div>
 					<h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-						Selamat Bertugas, {lecturer.name}!
+						Selamat Bertugas, {currentLecturer.name}!
 					</h2>
 					<p className="text-xs sm:text-sm text-slate-600 mt-1">
 						NIDN:{" "}
 						<span className="font-mono font-semibold">
-							{lecturer.identifier}
+							{currentLecturer.nidn || currentLecturer.identifier}
 						</span>{" "}
-						• Homebase: <span className="font-semibold">{lecturer.prodi}</span>
+						• Homebase:{" "}
+						<span className="font-semibold">{currentLecturer.prodi}</span>
 					</p>
 				</div>
 
@@ -61,28 +94,32 @@ export const DosenDashboard: React.FC<DosenDashboardProps> = ({
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 				<StatCard
 					label="Kelas yang Diampu"
-					value="3 Kelas"
-					subtext="2 Mata Kuliah Aktif"
+					value={`${stats?.totalClasses ?? 3} Kelas`}
+					subtext={`${classesList.length} Rombongan Belajar Aktif`}
 					icon={<BookOpenCheck className="w-6 h-6" />}
 					accentColor="olive"
 				/>
 				<StatCard
 					label="Total Mahasiswa Binaan"
-					value="116 Orang"
-					subtext="Dari 3 rombongan belajar"
+					value={`${stats?.totalStudents ?? 116} Orang`}
+					subtext={`${stats?.pendingKrsApprovals ?? 0} Pengajuan KRS Menunggu`}
 					icon={<Users className="w-6 h-6" />}
 					accentColor="blue"
 				/>
 				<StatCard
 					label="Jadwal Hari Ini"
-					value="1 Sesi"
-					subtext="Lab AI 302 (08:00 WIB)"
+					value={`${stats?.todaySessionCount ?? 1} Sesi`}
+					subtext={
+						dashboardData?.todaySchedule?.sessions?.[0]
+							? `${dashboardData.todaySchedule.sessions[0].room} (${dashboardData.todaySchedule.sessions[0].startTime} WIB)`
+							: "Lab AI 302 (08:00 WIB)"
+					}
 					icon={<Calendar className="w-6 h-6" />}
 					accentColor="gold"
 				/>
 				<StatCard
 					label="Kelengkapan RPS & Nilai"
-					value="100%"
+					value={`${stats?.gradingCompleteness ?? 100}%`}
 					subtext="Siap untuk evaluasi BAAK"
 					icon={<Award className="w-6 h-6" />}
 					accentColor="purple"
@@ -90,7 +127,9 @@ export const DosenDashboard: React.FC<DosenDashboardProps> = ({
 			</div>
 
 			{/* Mascot Insight Message */}
-			<PandaMascot message="Hari ini terdapat 1 sesi perkuliahan Kecerdasan Buatan di Lab AI. Harap melakukan pencatatan presensi mahasiswa sebelum pukul 17:00 WIB." />
+			<PandaMascot
+				message={`Bapak/Ibu ${currentLecturer.name}, portal terhubung prima ke database akademik UNPANDA. Terdapat ${stats?.totalClasses ?? 3} kelas perkuliahan aktif semester ini.`}
+			/>
 
 			{/* Quick Access to Classes */}
 			<div className="space-y-4">
@@ -102,14 +141,14 @@ export const DosenDashboard: React.FC<DosenDashboardProps> = ({
 					<button
 						type="button"
 						onClick={() => onNavigate("dosen-kelas")}
-						className="text-xs font-semibold text-[#75834a] hover:underline"
+						className="text-xs font-semibold text-[#75834a] hover:underline cursor-pointer"
 					>
 						Kelola Semua Kelas →
 					</button>
 				</div>
 
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-					{mockKelasDosen.map((kelas) => (
+					{classesList.map((kelas: any) => (
 						<Card key={kelas.id} className="hover:shadow-md transition-shadow">
 							<div className="flex items-center justify-between mb-2">
 								<Badge variant="olive">{kelas.kelas}</Badge>

@@ -9,6 +9,7 @@ Dokumen ini menjelaskan rancangan arsitektur, pola desain teknis, diagram relasi
 Sistem Informasi Akademik UNPANDA dirancang untuk melayani kegiatan operasional perkuliahan **single-tenant** pada **Fakultas Teknologi dan Informatika (FTI)**. Tidak ada abstraksi multi-tenant kompleks (tidak ada tabel `faculties`), sehingga konfigurasi fakultas dan identitas kampus disimpan terpusat di tabel `institution_settings`.
 
 ### Aktor & Hak Akses (Role-Based Access Control)
+
 1. **Admin (BAAK / Staf IT)**:
    - Pengelolaan data master kampus (program studi, kurikulum mata kuliah, gedung, ruangan perkuliahan).
    - Pengaturan periode akademik (buka/tutup jendela pengisian KRS dan masa input nilai).
@@ -28,7 +29,7 @@ Sistem Informasi Akademik UNPANDA dirancang untuk melayani kegiatan operasional 
 
 ## 2. Pola Arsitektur: Modular Monolith
 
-Aplikasi menggunakan arsitektur **Modular Monolith** dalam satu codebase TypeScript terstruktur. Seluruh domain dibagi ke dalam modul-modul mandiri yang memiliki tanggung jawab tunggal (*Single Responsibility Principle*):
+Aplikasi menggunakan arsitektur **Modular Monolith** dalam satu codebase TypeScript terstruktur. Seluruh domain dibagi ke dalam modul-modul mandiri yang memiliki tanggung jawab tunggal (_Single Responsibility Principle_):
 
 ```
 backend/
@@ -56,6 +57,7 @@ backend/
 ```
 
 ### Layered Architecture per Modul
+
 Setiap modul menerapkan pemisahan 4 lapis yang ketat:
 1. **Routes (`*.routes.ts`)**: Mendaftarkan HTTP endpoint, memasang guard autentikasi (`authenticate`), dan pembatasan peran (`requireRole`).
 2. **Controller (`*.controller.ts`)**: Memvalidasi skema input (query, params, body) menggunakan Zod, memanggil service layer, dan memformat kode status HTTP (200, 201, dll.).
@@ -310,6 +312,7 @@ erDiagram
 ## 5. Implementasi Aturan Akademik Inti
 
 ### A. Algoritma Deteksi Bentrok Jadwal Perkuliahan
+
 Bentrok waktu terjadi jika hari kuliah sama dan interval waktu beririsan:
 $$\text{isOverlap} = (\text{Start}_A < \text{End}_B) \land (\text{End}_A > \text{Start}_B)$$
 Algoritma memeriksa dua dimensi:
@@ -317,38 +320,42 @@ Algoritma memeriksa dua dimensi:
 2. **Bentrok Dosen**: Dosen yang sama tidak boleh dijadwalkan mengajar di 2 ruangan/kelas berbeda pada waktu yang bersamaan.
 
 ### B. Batas SKS Dinamis Berdasarkan IPS
+
 Beban maksimal SKS mahasiswa pada semester berjalan ditentukan secara dinamis berdasarkan Indeks Prestasi Semester (IPS) semester sebelumnya:
-* $\text{IPS} \ge 3.00 \implies \text{Maksimal } 24 \text{ SKS}$
-* $2.50 \le \text{IPS} < 3.00 \implies \text{Maksimal } 21 \text{ SKS}$
-* $2.00 \le \text{IPS} < 2.50 \implies \text{Maksimal } 18 \text{ SKS}$
-* $\text{IPS} < 2.00 \implies \text{Maksimal } 15 \text{ SKS}$
+- $\text{IPS} \ge 3.00 \implies \text{Maksimal } 24 \text{ SKS}$
+- $2.50 \le \text{IPS} < 3.00 \implies \text{Maksimal } 21 \text{ SKS}$
+- $2.00 \le \text{IPS} < 2.50 \implies \text{Maksimal } 18 \text{ SKS}$
+- $\text{IPS} < 2.00 \implies \text{Maksimal } 15 \text{ SKS}$
 
 ### C. Pembobotan & Konversi Nilai Akademik
+
 Nilai akhir mahasiswa dihitung dengan komposisi bobot baku FTI UNPANDA:
 $$\text{Nilai Akhir} = (0.10 \times \text{Presensi}) + (0.20 \times \text{Tugas}) + (0.35 \times \text{UTS}) + (0.35 \times \text{UAS})$$
 
 Konversi Nilai Angka ke Nilai Huruf dan Bobot Indeks:
-| Rentang Nilai Akhir | Nilai Huruf | Bobot (Indeks) | Predikat |
-|---|:---:|:---:|---|
-| $\ge 85.00$ | **A** | 4.00 | Sangat Baik |
-| $80.00 - 84.99$ | **A-** | 3.75 | Hampir Sangat Baik |
-| $75.00 - 79.99$ | **B+** | 3.50 | Sangat Memuaskan |
-| $70.00 - 74.99$ | **B** | 3.00 | Memuaskan |
-| $65.00 - 69.99$ | **B-** | 2.75 | Cukup Memuaskan |
-| $60.00 - 64.99$ | **C+** | 2.50 | Cukup Baik |
-| $55.00 - 59.99$ | **C** | 2.00 | Cukup |
-| $40.00 - 54.99$ | **D** | 1.00 | Kurang |
-| $< 40.00$ | **E** | 0.00 | Tidak Lulus |
+| Rentang Nilai Akhir | Nilai Huruf | Bobot (Indeks) | Predikat           |
+| ------------------- | :---------: | :------------: | ------------------ |
+| $\ge 85.00$         |    **A**    |      4.00      | Sangat Baik        |
+| $80.00 - 84.99$     |   **A-**    |      3.75      | Hampir Sangat Baik |
+| $75.00 - 79.99$     |   **B+**    |      3.50      | Sangat Memuaskan   |
+| $70.00 - 74.99$     |    **B**    |      3.00      | Memuaskan          |
+| $65.00 - 69.99$     |   **B-**    |      2.75      | Cukup Memuaskan    |
+| $60.00 - 64.99$     |   **C+**    |      2.50      | Cukup Baik         |
+| $55.00 - 59.99$     |    **C**    |      2.00      | Cukup              |
+| $40.00 - 54.99$     |    **D**    |      1.00      | Kurang             |
+| $< 40.00$           |    **E**    |      0.00      | Tidak Lulus        |
 
 ### D. Perhitungan IPS, IPK, dan Aturan Mata Kuliah Ulang
-* **Indeks Prestasi Semester (IPS)**:
+
+- **Indeks Prestasi Semester (IPS)**:
   $$\text{IPS} = \frac{\sum (\text{SKS Matkul} \times \text{Bobot Nilai})}{\sum \text{SKS Semester}}$$
-* **Indeks Prestasi Kumulatif (IPK)**:
+- **Indeks Prestasi Kumulatif (IPK)**:
   $$\text{IPK} = \frac{\sum (\text{SKS Matkul Lulus} \times \text{Bobot Nilai Tertinggi})}{\sum \text{SKS Kumulatif}}$$
-* **Aturan Remedial / Mata Kuliah Ulang**:
-  Jika mahasiswa mengambil mata kuliah yang sama lebih dari satu kali, transkrip kumulatif secara otomatis mengambil **nilai tertinggi** (*highest grade*), bukan nilai semester terakhir.
+- **Aturan Remedial / Mata Kuliah Ulang**:
+  Jika mahasiswa mengambil mata kuliah yang sama lebih dari satu kali, transkrip kumulatif secara otomatis mengambil **nilai tertinggi** (_highest grade_), bukan nilai semester terakhir.
 
 ### E. Syarat Kelayakan Ujian Akhir Semester (UAS)
+
 Mahasiswa diwajibkan menghadiri minimal **75%** dari total sesi perkuliahan tatap muka yang terlaksana (dari 16 sesi):
 $$\text{Persentase Kehadiran} = \left(\frac{\text{Jumlah Hadir}}{\text{Sesi Terlaksana}}\right) \times 100\%$$
 Jika persentase $< 75\%$, mahasiswa otomatis ditandai `TIDAK MEMENUHI SYARAT` dan tidak diizinkan mengikuti UAS.
@@ -358,7 +365,7 @@ Jika persentase $< 75\%$, mahasiswa otomatis ditandai `TIDAK MEMENUHI SYARAT` da
 ## 6. Postur Keamanan & Hardening
 
 1. **Hashing Kata Sandi**: Menggunakan algoritma mutakhir **Argon2id** (`argon2`), standar industri pengganti Bcrypt yang tahan terhadap serangan GPU cracking.
-2. **Session Cookie**: Cookie sesi bertanda tangan (*HMAC signed cookie*) dengan flag `HttpOnly`, `SameSite: Lax`, dan `Secure` (di production), kebal terhadap pencurian token via serangan XSS.
+2. **Session Cookie**: Cookie sesi bertanda tangan (_HMAC signed cookie_) dengan flag `HttpOnly`, `SameSite: Lax`, dan `Secure` (di production), kebal terhadap pencurian token via serangan XSS.
 3. **Pencegahan Insecure Direct Object Reference (IDOR)**:
    - Dosen hanya berhak mengubah nilai dan mengunduh laporan dari kelas yang dia ampu sendiri.
    - Mahasiswa hanya berhak melihat KHS, transkrip, dan presensi miliknya sendiri.
@@ -370,4 +377,4 @@ Jika persentase $< 75\%$, mahasiswa otomatis ditandai `TIDAK MEMENUHI SYARAT` da
 6. **Pelacakan Tracing (Request ID)**:
    Setiap HTTP request diberikan header `X-Request-Id` (UUIDv4) untuk pelacakan end-to-end pada audit log.
 7. **Pembersihan Database & Prepared Statements**:
-   Prisma ORM mencegah 100% kerentanan SQL Injection melalui query terparameterisasi (*prepared statements*).
+   Prisma ORM mencegah 100% kerentanan SQL Injection melalui query terparameterisasi (_prepared statements_).

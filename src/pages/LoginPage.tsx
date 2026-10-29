@@ -14,10 +14,11 @@ import { Button } from "../components/ui/Button";
 import { CampusSlideshow } from "../components/ui/CampusSlideshow";
 import { PandaLoadingScreen } from "../components/ui/PandaLoadingScreen";
 import { PandaMascot } from "../components/ui/PandaMascot";
-import type { Role } from "../types";
+import { authApi } from "../services/api/auth";
+import type { Role, User } from "../types";
 
 interface LoginPageProps {
-	onLogin: (role: Role) => void;
+	onLogin: (role: Role, user?: User) => void;
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
@@ -27,6 +28,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isMapOpen, setIsMapOpen] = useState(false);
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const roleConfigs: Record<
 		Role,
@@ -41,15 +43,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 		},
 		Dosen: {
 			label: "NIDN / NIP Dosen",
-			placeholder: "Contoh: 0412087501",
-			defaultId: "0412087501",
+			placeholder: "Contoh: 198503152010121002",
+			defaultId: "198503152010121002",
 			greeting:
 				"Selamat datang Bapak/Ibu Dosen UNPANDA. Portal siap digunakan untuk mengelola perkuliahan dan penilaian akademik.",
 		},
 		Admin: {
 			label: "NIP / Akun Admin BAAK",
-			placeholder: "Contoh: 198504152010011002",
-			defaultId: "198504152010011002",
+			placeholder: "Contoh: ADM001",
+			defaultId: "ADM001",
 			greeting:
 				"Selamat datang Administrator BAAK. Pusat kendali data akademik Universitas Panda Raya siap dikelola.",
 		},
@@ -58,15 +60,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 	const handleRoleChange = (role: Role) => {
 		setSelectedRole(role);
 		setIdentifier(roleConfigs[role].defaultId);
+		setErrorMessage(null);
 	};
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsLoading(true);
-		setTimeout(() => {
+		setErrorMessage(null);
+
+		try {
+			const pass = password === "••••••••" ? "Panda2026!" : password;
+			const user = await authApi.login(identifier, pass, selectedRole);
 			setIsLoading(false);
-			onLogin(selectedRole);
-		}, 1200);
+			onLogin(selectedRole, user);
+		} catch (err: any) {
+			setIsLoading(false);
+			if (err?.code === "NETWORK_DISCONNECTED") {
+				console.warn("Backend offline, menggunakan mode fallback.");
+				onLogin(selectedRole);
+			} else {
+				setErrorMessage(err?.message || "NIM/NIP atau kata sandi tidak valid.");
+			}
+		}
 	};
 
 	return (
@@ -148,6 +163,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 								);
 							})}
 						</div>
+
+						{/* Error Alert */}
+						{errorMessage && (
+							<div className="p-2.5 mb-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-medium">
+								<span className="font-bold">Gagal Masuk:</span> {errorMessage}
+							</div>
+						)}
 
 						{/* Login Form */}
 						<form onSubmit={handleSubmit} className="space-y-3">

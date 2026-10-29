@@ -1,11 +1,58 @@
 import type React from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { mockUsers } from "../../mock/academicData";
+import { authApi } from "../../services/api/auth.js";
+import { lecturerApi } from "../../services/api/lecturer.js";
 
 export const DosenProfil: React.FC = () => {
-	const lecturer = mockUsers.Dosen;
+	const defaultLecturer = mockUsers.Dosen;
+	const [lecturer, setLecturer] = useState({
+		name: defaultLecturer.name,
+		identifier: defaultLecturer.identifier,
+		email: defaultLecturer.email,
+		prodi: defaultLecturer.prodi,
+		title: "Lektor Kepala",
+		totalSks: 12,
+		adviseesCount: 24,
+	});
+
+	useEffect(() => {
+		let isMounted = true;
+		Promise.all([authApi.getMe(), lecturerApi.getLecturerDashboard()])
+			.then(([meRes, dashRes]) => {
+				if (!isMounted) return;
+				const user = meRes?.user;
+				const lecturerProfile = user?.lecturerProfile;
+				const stats = dashRes?.stats;
+
+				setLecturer((prev) => ({
+					...prev,
+					name: user?.name || prev.name,
+					identifier: lecturerProfile?.nidn || prev.identifier,
+					email: user?.email || prev.email,
+					prodi:
+						lecturerProfile?.studyProgram?.name ||
+						dashRes?.lecturer?.prodiName ||
+						prev.prodi,
+					title: lecturerProfile?.title || prev.title,
+					totalSks: stats?.totalSks ?? prev.totalSks,
+					adviseesCount:
+						dashRes?.advisees?.length ??
+						stats?.pendingKrsCount ??
+						prev.adviseesCount,
+				}));
+			})
+			.catch(() => {
+				// Keep fallback
+			});
+
+		return () => {
+			isMounted = false;
+		};
+	}, []);
 
 	return (
 		<div className="space-y-6 max-w-4xl mx-auto">
@@ -37,7 +84,7 @@ export const DosenProfil: React.FC = () => {
 							{lecturer.identifier}
 						</span>{" "}
 						• Jabatan Fungsional:{" "}
-						<span className="font-semibold">Lektor Kepala</span>
+						<span className="font-semibold">{lecturer.title}</span>
 					</p>
 					<p className="text-xs text-slate-500">
 						Homebase Prodi:{" "}
@@ -69,12 +116,14 @@ export const DosenProfil: React.FC = () => {
 						<div className="flex justify-between">
 							<dt className="text-slate-500">Beban Mengajar (BKD)</dt>
 							<dd className="font-bold text-[#75834a]">
-								12 SKS (Memenuhi Syarat)
+								{lecturer.totalSks} SKS (Memenuhi Syarat)
 							</dd>
 						</div>
 						<div className="flex justify-between">
 							<dt className="text-slate-500">Mahasiswa Bimbingan Akademik</dt>
-							<dd className="font-semibold text-slate-900">24 Mahasiswa</dd>
+							<dd className="font-semibold text-slate-900">
+								{lecturer.adviseesCount} Mahasiswa
+							</dd>
 						</div>
 					</dl>
 				</Card>

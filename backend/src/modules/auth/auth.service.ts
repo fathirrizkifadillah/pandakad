@@ -103,6 +103,49 @@ export class AuthService {
 		const { passwordHash: _, ...safeUser } = session.user;
 		return safeUser;
 	}
+
+	/**
+	 * Mengambil seluruh daftar akun pengguna untuk Administrator BAAK.
+	 */
+	async listUsers(role?: string, search?: string) {
+		const whereClause: Record<string, unknown> = { isActive: true };
+		if (role && role !== "Semua") {
+			whereClause.role = role;
+		}
+		if (search) {
+			whereClause.OR = [
+				{ name: { contains: search, mode: "insensitive" } },
+				{ identifier: { contains: search, mode: "insensitive" } },
+				{ email: { contains: search, mode: "insensitive" } },
+			];
+		}
+
+		return prisma.user.findMany({
+			where: whereClause,
+			select: {
+				id: true,
+				identifier: true,
+				name: true,
+				email: true,
+				role: true,
+				isActive: true,
+				studentProfile: {
+					select: {
+						nim: true,
+						studyProgram: { select: { name: true } },
+					},
+				},
+				lecturerProfile: {
+					select: {
+						nidn: true,
+						nip: true,
+						studyProgram: { select: { name: true } },
+					},
+				},
+			},
+			orderBy: [{ role: "asc" }, { name: "asc" }],
+		});
+	}
 }
 
 export const authService = new AuthService();

@@ -71,6 +71,26 @@ export class AuthController {
 			next(error);
 		}
 	}
+
+	/**
+	 * GET /api/v1/auth/users (Admin only)
+	 */
+	async listUsers(
+		req: Request,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> {
+		try {
+			const { role, search } = req.query as {
+				role?: string;
+				search?: string;
+			};
+			const users = await authService.listUsers(role, search);
+			res.status(200).json({ data: users });
+		} catch (error) {
+			next(error);
+		}
+	}
 }
 
 export const authController = new AuthController();

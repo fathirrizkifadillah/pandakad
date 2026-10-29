@@ -4,7 +4,9 @@ import argon2 from "argon2";
 const prisma = new PrismaClient();
 
 async function main() {
-	console.log("🌱 Memulai seeding database UNPANDA (Data Master & Pengguna)...");
+	console.log(
+		"🌱 Memulai seeding database UNPANDA (Data Master & Pengguna)...",
+	);
 
 	// 1. Pengaturan Institusi Tunggal (Single Tenant UNPANDA & FTI)
 	const settings = await prisma.institutionSettings.upsert({
@@ -73,7 +75,9 @@ async function main() {
 			create: p,
 		});
 		prodiMap.set(p.code, res.id);
-		console.log(`🎓 Program Studi siap: [${res.degree}] ${res.name} (${res.code})`);
+		console.log(
+			`🎓 Program Studi siap: [${res.degree}] ${res.name} (${res.code})`,
+		);
 	}
 
 	// 3. Periode / Tahun Akademik
@@ -118,7 +122,9 @@ async function main() {
 			create: t,
 		});
 		if (res.isActive) activeTermId = res.id;
-		console.log(`📅 Periode Akademik siap: ${res.name} [Aktif: ${res.isActive}]`);
+		console.log(
+			`📅 Periode Akademik siap: ${res.name} [Aktif: ${res.isActive}]`,
+		);
 	}
 
 	// Update activeTermId di InstitutionSettings
@@ -321,7 +327,9 @@ async function main() {
 			update: c,
 			create: c,
 		});
-		console.log(`📚 Mata Kuliah siap: [${res.code}] ${res.name} (${res.sks} SKS - Sem ${res.semester})`);
+		console.log(
+			`📚 Mata Kuliah siap: [${res.code}] ${res.name} (${res.sks} SKS - Sem ${res.semester})`,
+		);
 	}
 
 	// 7. Pengguna & Profil (User, LecturerProfile, StudentProfile)
@@ -1004,7 +1012,9 @@ async function main() {
 					});
 				}
 			}
-			console.log("📝 Initial KRS Mahasiswa Arya Wicaksana (5 Kelas Approved) siap.");
+			console.log(
+				"📝 Initial KRS Mahasiswa Arya Wicaksana (5 Kelas Approved) siap.",
+			);
 		}
 	}
 

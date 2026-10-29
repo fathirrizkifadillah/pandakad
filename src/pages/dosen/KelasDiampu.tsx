@@ -1,15 +1,36 @@
 import { Award, Clock, MapPin, UserCheck, Users } from "lucide-react";
 import type React from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { mockKelasDosen } from "../../mock/academicData";
+import { lecturerApi } from "../../services/api/lecturer";
+import type { KelasDosenItem } from "../../types";
 
 interface KelasDiampuProps {
 	onNavigate: (path: string) => void;
 }
 
 export const KelasDiampu: React.FC<KelasDiampuProps> = ({ onNavigate }) => {
+	const [taughtClasses, setTaughtClasses] =
+		useState<KelasDosenItem[]>(mockKelasDosen);
+
+	// Muat daftar kelas riil dosen dari backend API
+	useEffect(() => {
+		const loadClasses = async () => {
+			try {
+				const res = await lecturerApi.getTaughtClasses();
+				if (res && res.length > 0) {
+					setTaughtClasses(res);
+				}
+			} catch {
+				// Gunakan data mock jika backend offline
+			}
+		};
+		loadClasses();
+	}, []);
+
 	return (
 		<div className="space-y-6">
 			<div>
@@ -23,7 +44,7 @@ export const KelasDiampu: React.FC<KelasDiampuProps> = ({ onNavigate }) => {
 			</div>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-				{mockKelasDosen.map((item) => (
+				{taughtClasses.map((item) => (
 					<Card
 						key={item.id}
 						className="flex flex-col justify-between hover:shadow-md transition-shadow"
@@ -59,27 +80,27 @@ export const KelasDiampu: React.FC<KelasDiampuProps> = ({ onNavigate }) => {
 								</div>
 								<div className="flex items-center justify-between">
 									<span className="flex items-center gap-1.5 text-slate-500">
-										<Users className="w-3.5 h-3.5" /> Mahasiswa
+										<Users className="w-3.5 h-3.5" /> Peserta
 									</span>
-									<span className="font-bold text-[#75834a]">
-										{item.jumlahMahasiswa} Orang
+									<span className="font-semibold text-slate-800">
+										{item.jumlahMahasiswa} Mahasiswa
 									</span>
 								</div>
 							</dl>
 						</div>
 
-						<div className="mt-5 pt-4 border-t border-slate-100 grid grid-cols-2 gap-2">
+						<div className="mt-5 pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
 							<Button
-								variant="outline"
 								size="sm"
+								variant="outline"
 								onClick={() => onNavigate("dosen-absensi")}
 								leftIcon={<UserCheck className="w-3.5 h-3.5" />}
 							>
 								Presensi
 							</Button>
 							<Button
-								variant="primary"
 								size="sm"
+								variant="primary"
 								onClick={() => onNavigate("dosen-nilai")}
 								leftIcon={<Award className="w-3.5 h-3.5" />}
 							>

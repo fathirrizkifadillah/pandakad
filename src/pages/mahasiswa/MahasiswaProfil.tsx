@@ -1,11 +1,32 @@
 import type React from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { mockUsers } from "../../mock/academicData";
+import { studentApi } from "../../services/api/student";
 
 export const MahasiswaProfil: React.FC = () => {
 	const student = mockUsers.Mahasiswa;
+	const [dashboardRes, setDashboardRes] = useState<any>(null);
+
+	// Muat data profil dari backend API
+	useEffect(() => {
+		const loadProfile = async () => {
+			try {
+				const res = await studentApi.getStudentDashboard();
+				if (res) {
+					setDashboardRes(res);
+				}
+			} catch {
+				// Gunakan data mock jika backend offline
+			}
+		};
+		loadProfile();
+	}, []);
+
+	const currentStudent = dashboardRes?.student || student;
+	const currentStats = dashboardRes?.stats;
 
 	return (
 		<div className="space-y-6 max-w-4xl mx-auto">
@@ -20,25 +41,29 @@ export const MahasiswaProfil: React.FC = () => {
 
 			<Card className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
 				<div className="w-24 h-24 rounded-2xl bg-[#75834a]/15 text-[#566432] border-2 border-[#75834a]/30 flex items-center justify-center font-extrabold text-3xl shrink-0">
-					{student.name.charAt(0)}
+					{currentStudent.name.charAt(0)}
 				</div>
 
 				<div className="flex-1 text-center sm:text-left space-y-2">
 					<div className="flex flex-col sm:flex-row sm:items-center gap-2">
-						<h3 className="text-xl font-bold text-slate-900">{student.name}</h3>
+						<h3 className="text-xl font-bold text-slate-900">
+							{currentStudent.name}
+						</h3>
 						<Badge variant="success">Status: Aktif Kuliah</Badge>
 					</div>
 					<p className="text-sm text-slate-600">
 						NIM:{" "}
 						<span className="font-mono font-semibold">
-							{student.identifier}
+							{currentStudent.nim || currentStudent.identifier}
 						</span>{" "}
 						• Program Studi:{" "}
-						<span className="font-semibold">{student.prodi}</span>
+						<span className="font-semibold">{currentStudent.prodi}</span>
 					</p>
 					<p className="text-xs text-slate-500">
 						Dosen Pembimbing Akademik (DPA):{" "}
-						<span className="font-semibold text-slate-800">{student.dpa}</span>
+						<span className="font-semibold text-slate-800">
+							{currentStudent.academicAdvisor || currentStudent.dpa}
+						</span>
 					</p>
 				</div>
 			</Card>
@@ -51,22 +76,29 @@ export const MahasiswaProfil: React.FC = () => {
 					<dl className="space-y-3 text-xs sm:text-sm">
 						<div className="flex justify-between">
 							<dt className="text-slate-500">Tahun Angkatan</dt>
-							<dd className="font-semibold text-slate-900">2022 / 2023</dd>
+							<dd className="font-semibold text-slate-900">
+								{currentStudent.entryYear || 2022} /{" "}
+								{(currentStudent.entryYear || 2022) + 1}
+							</dd>
 						</div>
 						<div className="flex justify-between">
 							<dt className="text-slate-500">Semester Berjalan</dt>
 							<dd className="font-semibold text-slate-900">
-								Semester 5 (Ganjil)
+								Semester {currentStudent.currentSemester || 5} (Ganjil)
 							</dd>
 						</div>
 						<div className="flex justify-between">
 							<dt className="text-slate-500">IPK Kumulatif</dt>
-							<dd className="font-bold text-[#75834a]">{student.ipk}</dd>
+							<dd className="font-bold text-[#75834a]">
+								{currentStats?.gpa !== undefined
+									? Number(currentStats.gpa).toFixed(2)
+									: student.ipk}
+							</dd>
 						</div>
 						<div className="flex justify-between">
 							<dt className="text-slate-500">Total SKS Diperoleh</dt>
 							<dd className="font-semibold text-slate-900">
-								{student.sksTotal} SKS
+								{currentStats?.totalSksPassed ?? student.sksTotal} SKS
 							</dd>
 						</div>
 					</dl>
@@ -80,7 +112,7 @@ export const MahasiswaProfil: React.FC = () => {
 						<div className="flex justify-between">
 							<dt className="text-slate-500">Email Kampus</dt>
 							<dd className="font-mono text-slate-800 text-xs">
-								{student.email}
+								{currentStudent.email}
 							</dd>
 						</div>
 						<div className="flex justify-between">

@@ -1,12 +1,50 @@
 import { Calendar, Clock, Download, MapPin, User } from "lucide-react";
 import type React from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { mockJadwalMahasiswa } from "../../mock/academicData";
+import { studentApi } from "../../services/api/student";
+import type { JadwalKuliahItem } from "../../types";
 
 export const JadwalKuliah: React.FC = () => {
 	const days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
+	const [scheduleItems, setScheduleItems] =
+		useState<JadwalKuliahItem[]>(mockJadwalMahasiswa);
+
+	// Muat jadwal perkuliahan riil mahasiswa dari endpoint dashboard
+	useEffect(() => {
+		const loadSchedule = async () => {
+			try {
+				const res = await studentApi.getStudentDashboard();
+				if (res?.enrolledClasses && res.enrolledClasses.length > 0) {
+					const adapted: JadwalKuliahItem[] = [];
+					for (const cls of res.enrolledClasses) {
+						for (const sch of cls.schedules || []) {
+							adapted.push({
+								id: `${cls.classId}-${sch.dayOfWeek}`,
+								kode: cls.courseCode,
+								matkul: cls.courseName,
+								sks: cls.sks,
+								dosen: cls.lecturerName,
+								ruang: sch.room,
+								hari: sch.dayOfWeek,
+								jam: `${sch.startTime} - ${sch.endTime}`,
+								kelas: cls.classCode,
+							});
+						}
+					}
+					if (adapted.length > 0) {
+						setScheduleItems(adapted);
+					}
+				}
+			} catch {
+				// Gunakan data mock jika backend offline
+			}
+		};
+		loadSchedule();
+	}, []);
 
 	return (
 		<div className="space-y-6">
@@ -36,9 +74,7 @@ export const JadwalKuliah: React.FC = () => {
 			{/* Daily Schedule List */}
 			<div className="space-y-4">
 				{days.map((day) => {
-					const classesThisDay = mockJadwalMahasiswa.filter(
-						(j) => j.hari === day,
-					);
+					const classesThisDay = scheduleItems.filter((j) => j.hari === day);
 					return (
 						<Card key={day} padded={false} className="overflow-hidden">
 							<div className="px-5 py-3.5 bg-slate-100/75 border-b border-slate-200 flex items-center justify-between">

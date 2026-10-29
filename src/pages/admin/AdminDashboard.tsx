@@ -7,12 +7,14 @@ import {
 	Users,
 } from "lucide-react";
 import type React from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { PandaMascot } from "../../components/ui/PandaMascot";
 import { StatCard } from "../../components/ui/StatCard";
 import { mockPeriodeAkademik, mockUsers } from "../../mock/academicData";
+import { adminApi } from "../../services/api/admin.js";
 
 interface AdminDashboardProps {
 	onNavigate: (path: string) => void;
@@ -22,7 +24,72 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 	onNavigate,
 }) => {
 	const admin = mockUsers.Admin;
-	const activePeriod = mockPeriodeAkademik.find((p) => p.status === "Aktif");
+	const [activePeriod, setActivePeriod] = useState<{
+		semester: string;
+		tahun: string;
+		isKrsOpen: boolean;
+	}>(() => {
+		const found = mockPeriodeAkademik.find((p) => p.status === "Aktif");
+		return {
+			semester: found?.semester || "Ganjil",
+			tahun: found?.tahun || "2026/2027",
+			isKrsOpen: true,
+		};
+	});
+
+	const [stats, setStats] = useState({
+		totalStudents: "1,420",
+		totalLecturers: "86 Dosen",
+		totalCourses: "148 Matkul",
+		totalRooms: "32 Ruangan",
+		occupancyRate: "82%",
+		totalUsers: "1,506",
+		totalProdi: 6,
+	});
+
+	useEffect(() => {
+		let isMounted = true;
+		adminApi
+			.getAdminDashboard()
+			.then((res) => {
+				if (!isMounted || !res) return;
+				if (res.activePeriod) {
+					setActivePeriod({
+						semester: res.activePeriod.semester,
+						tahun: res.activePeriod.academicYear,
+						isKrsOpen: res.activePeriod.isKrsOpen,
+					});
+				}
+				if (res.stats) {
+					setStats({
+						totalStudents: res.stats.totalStudents
+							? `${res.stats.totalStudents.toLocaleString("id-ID")}`
+							: "1,420",
+						totalLecturers: res.stats.totalLecturers
+							? `${res.stats.totalLecturers} Dosen`
+							: "86 Dosen",
+						totalCourses: res.stats.totalCourses
+							? `${res.stats.totalCourses} Matkul`
+							: "148 Matkul",
+						totalRooms: res.stats.totalRooms
+							? `${res.stats.totalRooms} Ruangan`
+							: "32 Ruangan",
+						occupancyRate: `${res.stats.occupancyRate ?? 82}%`,
+						totalUsers: res.stats.totalUsers
+							? `${res.stats.totalUsers.toLocaleString("id-ID")}`
+							: "1,506",
+						totalProdi: res.studyPrograms?.length ?? 6,
+					});
+				}
+			})
+			.catch(() => {
+				// Keep fallback
+			});
+
+		return () => {
+			isMounted = false;
+		};
+	}, []);
 
 	return (
 		<div className="space-y-6">
@@ -41,11 +108,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 					<p className="text-xs sm:text-sm text-slate-600 mt-1">
 						Periode Berjalan:{" "}
 						<span className="font-bold text-[#566432]">
-							Semester {activePeriod?.semester} {activePeriod?.tahun}
+							Semester {activePeriod.semester} {activePeriod.tahun}
 						</span>{" "}
 						• Status:{" "}
-						<span className="font-semibold text-emerald-700">
-							KRS Online Aktif
+						<span
+							className={`font-semibold ${
+								activePeriod.isKrsOpen ? "text-emerald-700" : "text-amber-700"
+							}`}
+						>
+							{activePeriod.isKrsOpen ? "KRS Online Aktif" : "KRS Ditutup"}
 						</span>
 					</p>
 				</div>
@@ -68,7 +139,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 				<StatCard
 					label="Total Mahasiswa Aktif"
-					value="1,420"
+					value={stats.totalStudents}
 					subtext="Reguler & Ekstensi"
 					icon={<GraduationCap className="w-6 h-6" />}
 					accentColor="olive"
@@ -76,22 +147,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 				/>
 				<StatCard
 					label="Total Tenaga Pendidik"
-					value="86 Dosen"
+					value={stats.totalLecturers}
 					subtext="Tetap & Luar Biasa"
 					icon={<Users className="w-6 h-6" />}
 					accentColor="gold"
 				/>
 				<StatCard
 					label="Mata Kuliah Dibuka"
-					value="148 Matkul"
-					subtext="Di 6 Program Studi"
+					value={stats.totalCourses}
+					subtext={`Di ${stats.totalProdi} Program Studi`}
 					icon={<BookOpen className="w-6 h-6" />}
 					accentColor="blue"
 				/>
 				<StatCard
 					label="Kapasitas Ruang Kuliah"
-					value="32 Ruangan"
-					subtext="Okupansi rata-rata 82%"
+					value={stats.totalRooms}
+					subtext={`Okupansi rata-rata ${stats.occupancyRate}`}
 					icon={<Database className="w-6 h-6" />}
 					accentColor="purple"
 				/>
@@ -107,7 +178,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 						<h4 className="font-bold text-base text-slate-900">
 							Manajemen Pengguna
 						</h4>
-						<Badge variant="olive">1,506 Akun</Badge>
+						<Badge variant="olive">{stats.totalUsers} Akun</Badge>
 					</div>
 					<p className="text-xs text-slate-600 leading-relaxed mb-4">
 						Kelola akun login mahasiswa, dosen, dan staf BAAK. Tambah pengguna
@@ -129,7 +200,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 						<h4 className="font-bold text-base text-slate-900">
 							Master Data Akademik
 						</h4>
-						<Badge variant="gold">6 Program Studi</Badge>
+						<Badge variant="gold">{stats.totalProdi} Program Studi</Badge>
 					</div>
 					<p className="text-xs text-slate-600 leading-relaxed mb-4">
 						Konfigurasi kurikulum, mata kuliah prasyarat, pemetaan ruang kelas,

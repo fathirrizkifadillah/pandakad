@@ -1,11 +1,34 @@
 import { Clock, Download, MapPin, Users } from "lucide-react";
 import type React from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { mockKelasDosen } from "../../mock/academicData";
+import { lecturerApi } from "../../services/api/lecturer.js";
+import type { KelasDosenItem } from "../../types";
 
 export const JadwalMengajar: React.FC = () => {
+	const [schedules, setSchedules] = useState<KelasDosenItem[]>(mockKelasDosen);
+
+	useEffect(() => {
+		let isMounted = true;
+		lecturerApi
+			.getTaughtClasses()
+			.then((classes) => {
+				if (isMounted && classes && classes.length > 0) {
+					setSchedules(classes);
+				}
+			})
+			.catch(() => {
+				// Keep fallback
+			});
+
+		return () => {
+			isMounted = false;
+		};
+	}, []);
+
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -32,7 +55,7 @@ export const JadwalMengajar: React.FC = () => {
 			</div>
 
 			<div className="space-y-4">
-				{mockKelasDosen.map((item) => (
+				{schedules.map((item) => (
 					<Card key={item.id} className="hover:shadow-sm transition-shadow">
 						<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 							<div className="space-y-1">

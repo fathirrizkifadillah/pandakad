@@ -24,7 +24,8 @@ import { MahasiswaDashboard } from "./pages/mahasiswa/MahasiswaDashboard";
 import { MahasiswaProfil } from "./pages/mahasiswa/MahasiswaProfil";
 import { NilaiPage } from "./pages/mahasiswa/NilaiPage";
 import { PresensiPage } from "./pages/mahasiswa/PresensiPage";
-import type { Role } from "./types";
+import { authApi } from "./services/api/auth";
+import type { Role, User } from "./types";
 
 // Map between 21 Figma screens + Campus Map and internal routes
 const SCREEN_MAPPING: Record<
@@ -88,6 +89,7 @@ export const App: React.FC = () => {
 	const [currentRole, setCurrentRole] = useState<Role>(
 		() => getInitialState().role,
 	);
+	const [currentUser, setCurrentUser] = useState<User | null>(null);
 
 	// Sync with browser history and URL search params
 	const navigateTo = (path: string, newRole?: Role) => {
@@ -104,6 +106,22 @@ export const App: React.FC = () => {
 		url.searchParams.set("screen", String(screenNumber));
 		window.history.pushState({ path, role }, "", url);
 	};
+
+	// Pulihkan sesi aktif dari backend pada saat inisialisasi
+	useEffect(() => {
+		const restoreSession = async () => {
+			try {
+				const user = await authApi.getMe();
+				if (user) {
+					setCurrentUser(user);
+					setCurrentRole(user.role);
+				}
+			} catch {
+				// Tidak ada sesi aktif
+			}
+		};
+		restoreSession();
+	}, []);
 
 	useEffect(() => {
 		const handlePopState = (event: PopStateEvent) => {
@@ -134,14 +152,19 @@ export const App: React.FC = () => {
 	}, [pageTitle]);
 
 	// Handle Login Action
-	const handleLogin = (role: Role) => {
+	const handleLogin = (role: Role, user?: User) => {
+		if (user) {
+			setCurrentUser(user);
+		}
 		if (role === "Admin") navigateTo("admin-dashboard", "Admin");
 		else if (role === "Dosen") navigateTo("dosen-dashboard", "Dosen");
 		else navigateTo("mhs-dashboard", "Mahasiswa");
 	};
 
 	// Handle Logout Action
-	const handleLogout = () => {
+	const handleLogout = async () => {
+		await authApi.logout();
+		setCurrentUser(null);
 		navigateTo("login", "Mahasiswa");
 	};
 
@@ -157,8 +180,8 @@ export const App: React.FC = () => {
 		return <LoginPage onLogin={handleLogin} />;
 	}
 
-	// Active User object
-	const activeUser = mockUsers[currentRole];
+	// Active User object (Prioritaskan user nyata dari sesi API, fallback ke mock jika offline)
+	const activeUser = currentUser || mockUsers[currentRole];
 
 	// Render page inside AppLayout
 	const renderContent = () => {

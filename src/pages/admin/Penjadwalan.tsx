@@ -1,19 +1,41 @@
 import { Clock, Plus } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { mockJadwalMahasiswa } from "../../mock/academicData";
+import { adminApi } from "../../services/api/admin.js";
+import type { JadwalKuliahItem } from "../../types";
 
 export const Penjadwalan: React.FC = () => {
 	const [selectedDay, setSelectedDay] = useState("Semua");
+	const [jadwalList, setJadwalList] =
+		useState<JadwalKuliahItem[]>(mockJadwalMahasiswa);
+
+	useEffect(() => {
+		let isMounted = true;
+		adminApi
+			.getAllClasses()
+			.then((items) => {
+				if (isMounted && items && items.length > 0) {
+					setJadwalList(items);
+				}
+			})
+			.catch(() => {
+				// Keep fallback
+			});
+
+		return () => {
+			isMounted = false;
+		};
+	}, []);
 
 	const days = ["Semua", "Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
 	const filtered =
 		selectedDay === "Semua"
-			? mockJadwalMahasiswa
-			: mockJadwalMahasiswa.filter((j) => j.hari === selectedDay);
+			? jadwalList
+			: jadwalList.filter((j) => j.hari === selectedDay);
 
 	return (
 		<div className="space-y-6">

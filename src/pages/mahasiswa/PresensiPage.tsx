@@ -1,10 +1,40 @@
 import type React from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Card } from "../../components/ui/Card";
 import { PandaMascot } from "../../components/ui/PandaMascot";
 import { mockPresensi } from "../../mock/academicData";
+import { studentApi } from "../../services/api/student";
+import type { PresensiItem } from "../../types";
 
 export const PresensiPage: React.FC = () => {
+	const [presensiList, setPresensiList] =
+		useState<PresensiItem[]>(mockPresensi);
+
+	// Muat rekapitulasi kehadiran riil mahasiswa dari API backend
+	useEffect(() => {
+		const loadAttendance = async () => {
+			try {
+				const data = await studentApi.getMyAttendance();
+				if (data && data.length > 0) {
+					setPresensiList(data);
+				}
+			} catch {
+				// Gunakan data mock jika backend offline
+			}
+		};
+		loadAttendance();
+	}, []);
+
+	// Rata-rata persentase presensi kampus
+	const avgPercentage =
+		presensiList.length > 0
+			? Math.round(
+					presensiList.reduce((acc, p) => acc + p.persentase, 0) /
+						presensiList.length,
+				)
+			: 95;
+
 	return (
 		<div className="space-y-6">
 			<div>
@@ -17,7 +47,13 @@ export const PresensiPage: React.FC = () => {
 				</p>
 			</div>
 
-			<PandaMascot message="Kehadiran kamu rata-rata di atas 90%. Pertahankan kedisiplinan belajar ini untuk memenuhi syarat ujian semester." />
+			<PandaMascot
+				message={`Kehadiran kamu rata-rata ${avgPercentage}%. ${
+					avgPercentage >= 75
+						? "Pertahankan kedisiplinan belajar ini untuk memenuhi syarat ujian semester."
+						: "Tingkatkan kehadiran kamu agar memenuhi batas minimal kelayakan UAS 75%."
+				}`}
+			/>
 
 			<Card padded={false} className="overflow-hidden">
 				<div className="overflow-x-auto">
@@ -36,7 +72,7 @@ export const PresensiPage: React.FC = () => {
 							</tr>
 						</thead>
 						<tbody className="divide-y divide-slate-200/80">
-							{mockPresensi.map((p) => {
+							{presensiList.map((p) => {
 								const isSafe = p.persentase >= 75;
 								return (
 									<tr

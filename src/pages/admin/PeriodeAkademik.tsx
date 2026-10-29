@@ -1,30 +1,62 @@
 import { CalendarRange, CheckCircle, Lock, Plus, Unlock } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { mockPeriodeAkademik } from "../../mock/academicData";
+import { adminApi } from "../../services/api/admin.js";
 import type { PeriodeAkademik as PeriodeType } from "../../types";
 
 export const PeriodeAkademik: React.FC = () => {
 	const [periodes, setPeriodes] = useState<PeriodeType[]>(mockPeriodeAkademik);
 	const [toast, setToast] = useState<string | null>(null);
 
-	const toggleStatus = (id: string) => {
-		setPeriodes(
-			periodes.map((p) => {
-				if (p.id === id) {
-					const nextStatus = p.status === "Aktif" ? "Ditutup" : "Aktif";
-					setToast(
-						`Status periode ${p.semester} ${p.tahun} diubah menjadi "${nextStatus}".`,
-					);
-					setTimeout(() => setToast(null), 3500);
-					return { ...p, status: nextStatus };
+	const loadTerms = useCallback(() => {
+		adminApi
+			.getAcademicTerms()
+			.then((terms) => {
+				if (terms && terms.length > 0) {
+					setPeriodes(terms);
 				}
-				return p;
-			}),
-		);
+			})
+			.catch(() => {
+				// Keep fallback
+			});
+	}, []);
+
+	useEffect(() => {
+		loadTerms();
+	}, [loadTerms]);
+
+	const toggleStatus = async (id: string) => {
+		const target = periodes.find((p) => p.id === id);
+		if (!target) return;
+
+		const nextStatus = target.status === "Aktif" ? "Ditutup" : "Aktif";
+
+		try {
+			if (nextStatus === "Aktif") {
+				await adminApi.activateTerm(id);
+				loadTerms();
+			} else {
+				setPeriodes((prev) =>
+					prev.map((p) => (p.id === id ? { ...p, status: "Ditutup" } : p)),
+				);
+			}
+			setToast(
+				`Status periode ${target.semester} ${target.tahun} diubah menjadi "${nextStatus}".`,
+			);
+		} catch {
+			setPeriodes((prev) =>
+				prev.map((p) => (p.id === id ? { ...p, status: nextStatus } : p)),
+			);
+			setToast(
+				`Status periode ${target.semester} ${target.tahun} diubah secara lokal.`,
+			);
+		} finally {
+			setTimeout(() => setToast(null), 3500);
+		}
 	};
 
 	return (

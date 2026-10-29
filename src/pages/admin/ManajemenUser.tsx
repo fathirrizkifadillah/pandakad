@@ -1,16 +1,35 @@
 import { Plus, Search, Trash2 } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { mockUsersManagement } from "../../mock/academicData";
+import { adminApi } from "../../services/api/admin.js";
 import type { Role, UserManagementItem } from "../../types";
 
 export const ManajemenUser: React.FC = () => {
 	const [users, setUsers] = useState<UserManagementItem[]>(mockUsersManagement);
 	const [filterRole, setFilterRole] = useState<"Semua" | Role>("Semua");
 	const [searchQuery, setSearchQuery] = useState("");
+
+	useEffect(() => {
+		let isMounted = true;
+		adminApi
+			.getUsers()
+			.then((userList) => {
+				if (isMounted && userList && userList.length > 0) {
+					setUsers(userList);
+				}
+			})
+			.catch(() => {
+				// Keep fallback
+			});
+
+		return () => {
+			isMounted = false;
+		};
+	}, []);
 
 	const filteredUsers = users.filter((u) => {
 		const matchRole = filterRole === "Semua" || u.role === filterRole;

@@ -1,15 +1,59 @@
 import { Download } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { mockNilaiSemester, mockUsers } from "../../mock/academicData";
+import { studentApi } from "../../services/api/student";
+import type { NilaiSemesterItem } from "../../types";
 
 export const NilaiPage: React.FC = () => {
 	const [selectedSemester, setSelectedSemester] = useState("4");
 	const [activeTab, setActiveTab] = useState<"khs" | "transkrip">("khs");
+	const [khsData, setKhsData] = useState<{
+		grades: NilaiSemesterItem[];
+		ips: number;
+		maxSksNextTerm: number;
+	}>({
+		grades: mockNilaiSemester,
+		ips: 3.85,
+		maxSksNextTerm: 24,
+	});
+	const [transcriptData, setTranscriptData] = useState<{
+		grades: NilaiSemesterItem[];
+		ipk: number;
+		totalSksPassed: number;
+	}>({
+		grades: mockNilaiSemester,
+		ipk: 3.84,
+		totalSksPassed: 84,
+	});
 
 	const student = mockUsers.Mahasiswa;
+
+	// Muat data KHS dan Transkrip dari API backend
+	useEffect(() => {
+		const loadGrades = async () => {
+			try {
+				const [khs, trans] = await Promise.all([
+					studentApi.getMyKhs(),
+					studentApi.getMyTranscript(),
+				]);
+				if (khs && khs.grades.length > 0) {
+					setKhsData(khs);
+				}
+				if (trans && trans.grades.length > 0) {
+					setTranscriptData(trans);
+				}
+			} catch {
+				// Gunakan data mock jika backend offline
+			}
+		};
+		loadGrades();
+	}, []);
+
+	const currentGrades =
+		activeTab === "khs" ? khsData.grades : transcriptData.grades;
 
 	return (
 		<div className="space-y-6">
@@ -45,14 +89,14 @@ export const NilaiPage: React.FC = () => {
 					</span>
 					<div className="mt-1 flex items-baseline gap-2">
 						<span className="text-3xl font-extrabold text-slate-900 tabular-nums">
-							3.85
+							{khsData.ips.toFixed(2)}
 						</span>
 						<span className="text-xs text-emerald-600 font-semibold">
 							Sangat Memuaskan
 						</span>
 					</div>
 					<p className="text-[11px] text-slate-500 mt-1">
-						18 SKS diselesaikan dengan sukses
+						Batas SKS semester depan: {khsData.maxSksNextTerm} SKS
 					</p>
 				</Card>
 
@@ -62,14 +106,14 @@ export const NilaiPage: React.FC = () => {
 					</span>
 					<div className="mt-1 flex items-baseline gap-2">
 						<span className="text-3xl font-extrabold text-[#967727] tabular-nums">
-							{student.ipk}
+							{transcriptData.ipk.toFixed(2)}
 						</span>
 						<span className="text-xs text-[#967727] font-semibold">
 							Predikat: Cumlaude
 						</span>
 					</div>
 					<p className="text-[11px] text-slate-500 mt-1">
-						Kalkulasi 84 SKS kumulatif
+						Kalkulasi {transcriptData.totalSksPassed} SKS kumulatif
 					</p>
 				</Card>
 
@@ -79,12 +123,13 @@ export const NilaiPage: React.FC = () => {
 					</span>
 					<div className="mt-1 flex items-baseline gap-2">
 						<span className="text-3xl font-extrabold text-slate-900 tabular-nums">
-							84
+							{transcriptData.totalSksPassed}
 						</span>
 						<span className="text-xs text-slate-500">/ 144 SKS</span>
 					</div>
 					<p className="text-[11px] text-slate-500 mt-1">
-						Sisa 60 SKS (± 3 semester lagi)
+						Sisa {Math.max(0, 144 - transcriptData.totalSksPassed)} SKS (± 3
+						semester lagi)
 					</p>
 				</Card>
 			</div>
@@ -157,7 +202,7 @@ export const NilaiPage: React.FC = () => {
 							</tr>
 						</thead>
 						<tbody className="divide-y divide-slate-200/80">
-							{mockNilaiSemester.map((item) => (
+							{currentGrades.map((item) => (
 								<tr
 									key={item.kode}
 									className="hover:bg-slate-50/80 transition-colors"

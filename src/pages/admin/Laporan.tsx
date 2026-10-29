@@ -1,30 +1,92 @@
 import { Download } from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
+import { adminApi } from "../../services/api/admin.js";
 
 export const Laporan: React.FC = () => {
+	const [summary, setSummary] = useState<{
+		avgGpa?: number;
+		krsPercentage?: number;
+		attendanceRate?: number;
+	}>({});
+	const [classes, setClasses] = useState<any[]>([]);
+
+	useEffect(() => {
+		let isMounted = true;
+		Promise.all([
+			adminApi.getAcademicSummaryReport().catch(() => null),
+			adminApi.getAllClasses().catch(() => null),
+		]).then(([summaryRes, classesRes]) => {
+			if (!isMounted) return;
+			if (summaryRes) {
+				setSummary({
+					avgGpa: summaryRes.campusGpaAverage ?? 3.42,
+					krsPercentage: summaryRes.krsCompletionRate ?? 98.2,
+					attendanceRate: summaryRes.attendanceRate ?? 92.4,
+				});
+			}
+			if (classesRes) {
+				setClasses(classesRes);
+			}
+		});
+
+		return () => {
+			isMounted = false;
+		};
+	}, []);
+
+	const handleDownloadReport = (title: string) => {
+		const targetClassId = classes[0]?.id;
+
+		if (title.includes("Kehadiran") && targetClassId) {
+			adminApi.triggerDownloadAttendanceCsv(targetClassId);
+			return;
+		}
+
+		if (title.includes("IPK") || title.includes("Nilai")) {
+			if (targetClassId) {
+				adminApi.triggerDownloadGradesCsv(targetClassId);
+				return;
+			}
+		}
+
+		alert(`Mengunduh file laporan: ${title}`);
+	};
+
 	const reports = [
 		{
 			title: "Laporan Rata-rata IPK Mahasiswa per Program Studi",
 			category: "Prestasi Akademik",
 			date: "Agustus 2026",
 			format: "PDF / Excel",
-			stat: "Rata-rata Kampus: 3.42",
+			stat: `Rata-rata Kampus: ${
+				summary.avgGpa !== undefined ? summary.avgGpa.toFixed(2) : "3.42"
+			}`,
 		},
 		{
 			title: "Rekapitulasi Pengisian KRS Online Mahasiswa",
 			category: "Operasional Perkuliahan",
 			date: "Agustus 2026",
 			format: "Excel (.xlsx)",
-			stat: "98.2% Telah Mengisi",
+			stat: `${
+				summary.krsPercentage !== undefined
+					? `${summary.krsPercentage.toFixed(1)}%`
+					: "98.2%"
+			} Telah Mengisi`,
 		},
 		{
 			title: "Laporan Tingkat Kehadiran & Presensi Kuliah",
 			category: "Monitoring Pembelajaran",
 			date: "Semester Genap Lalu",
 			format: "PDF (.pdf)",
-			stat: "Rata-rata Presensi: 92.4%",
+			stat: `Rata-rata Presensi: ${
+				summary.attendanceRate !== undefined
+					? `${summary.attendanceRate.toFixed(1)}%`
+					: "92.4%"
+			}`,
 		},
 		{
 			title: "Daftar Calon Yudisium & Kelulusan Periode I",
@@ -84,7 +146,7 @@ export const Laporan: React.FC = () => {
 							<Button
 								size="sm"
 								variant="outline"
-								onClick={() => alert(`Mengunduh file: ${r.title}`)}
+								onClick={() => handleDownloadReport(r.title)}
 								leftIcon={<Download className="w-3.5 h-3.5" />}
 							>
 								Unduh

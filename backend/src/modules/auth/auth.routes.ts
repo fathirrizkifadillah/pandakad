@@ -1,7 +1,8 @@
+import { Role } from "@prisma/client";
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { env } from "../../config/env.js";
-import { authenticate } from "../../middlewares/auth.js";
+import { authenticate, requireRole } from "../../middlewares/auth.js";
 import { authController } from "./auth.controller.js";
 
 export const authRouter = Router();
@@ -33,4 +34,11 @@ authRouter.post("/logout", authenticate, (req, res, next) =>
 
 authRouter.get("/me", authenticate, (req, res, next) =>
 	authController.me(req, res, next),
+);
+
+authRouter.get(
+	"/users",
+	authenticate,
+	requireRole(Role.Admin),
+	(req, res, next) => authController.listUsers(req, res, next),
 );

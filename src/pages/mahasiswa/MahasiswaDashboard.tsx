@@ -10,12 +10,14 @@ import {
 	Sparkles,
 } from "lucide-react";
 import type React from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { PandaMascot } from "../../components/ui/PandaMascot";
 import { StatCard } from "../../components/ui/StatCard";
 import { mockJadwalMahasiswa, mockUsers } from "../../mock/academicData";
+import { studentApi } from "../../services/api/student";
 
 interface MahasiswaDashboardProps {
 	onNavigate: (path: string) => void;
@@ -25,6 +27,33 @@ export const MahasiswaDashboard: React.FC<MahasiswaDashboardProps> = ({
 	onNavigate,
 }) => {
 	const student = mockUsers.Mahasiswa;
+	const [dashboardData, setDashboardData] = useState<any>(null);
+
+	// Muat metrik berjalan mahasiswa dari endpoint agregasi backend
+	useEffect(() => {
+		const loadDashboard = async () => {
+			try {
+				const res = await studentApi.getStudentDashboard();
+				if (res) {
+					setDashboardData(res);
+				}
+			} catch {
+				// Gunakan data mock jika backend offline
+			}
+		};
+		loadDashboard();
+	}, []);
+
+	const currentIpk = dashboardData?.stats?.gpa ?? student.ipk ?? 3.84;
+	const currentTotalSks =
+		dashboardData?.stats?.totalSksPassed ?? student.sksTotal ?? 84;
+	const currentSemesterSks = dashboardData?.stats?.currentSemesterSks ?? 15;
+	const attendancePercentage =
+		dashboardData?.stats?.overallAttendancePercentage ?? 95.4;
+	const todaySessions =
+		dashboardData?.todaySchedule?.sessions?.length > 0
+			? dashboardData.todaySchedule.sessions
+			: mockJadwalMahasiswa.slice(0, 3);
 
 	return (
 		<div className="space-y-6">
@@ -35,15 +64,22 @@ export const MahasiswaDashboard: React.FC<MahasiswaDashboardProps> = ({
 						<span className="text-xs font-bold text-[#75834a] uppercase tracking-wider">
 							Portal Mahasiswa UNPANDA
 						</span>
-						<Badge variant="olive">Semester 5 Aktif</Badge>
+						<Badge variant="olive">
+							Semester {dashboardData?.student?.currentSemester ?? 5} Aktif
+						</Badge>
 					</div>
 					<h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-						Selamat Datang, {student.name}!
+						Selamat Datang, {dashboardData?.student?.name ?? student.name}!
 					</h2>
 					<p className="text-xs sm:text-sm text-slate-600 mt-1">
 						Program Studi:{" "}
-						<span className="font-semibold">{student.prodi}</span> • NIM:{" "}
-						<span className="font-mono font-medium">{student.identifier}</span>
+						<span className="font-semibold">
+							{dashboardData?.student?.prodi ?? student.prodi}
+						</span>{" "}
+						• NIM:{" "}
+						<span className="font-mono font-medium">
+							{dashboardData?.student?.nim ?? student.identifier}
+						</span>
 					</p>
 				</div>
 
@@ -62,7 +98,7 @@ export const MahasiswaDashboard: React.FC<MahasiswaDashboardProps> = ({
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 				<StatCard
 					label="Indeks Prestasi Kumulatif"
-					value={student.ipk ?? 3.84}
+					value={Number(currentIpk).toFixed(2)}
 					subtext="Target Kelulusan: Cumlaude"
 					icon={<Award className="w-6 h-6" />}
 					accentColor="olive"
@@ -70,22 +106,25 @@ export const MahasiswaDashboard: React.FC<MahasiswaDashboardProps> = ({
 				/>
 				<StatCard
 					label="Total SKS Diperoleh"
-					value={`${student.sksTotal ?? 84} SKS`}
+					value={`${currentTotalSks} SKS`}
 					subtext="Dari total 144 SKS kelulusan"
 					icon={<GraduationCap className="w-6 h-6" />}
 					accentColor="gold"
-					trend={{ text: "58.3% Menuju Sarjana", isPositive: true }}
+					trend={{
+						text: `${Math.round((currentTotalSks / 144) * 100)}% Menuju Sarjana`,
+						isPositive: true,
+					}}
 				/>
 				<StatCard
 					label="SKS Semester Berjalan"
-					value="15 SKS"
-					subtext="5 Mata Kuliah Diambil"
+					value={`${currentSemesterSks} SKS`}
+					subtext={`${dashboardData?.stats?.currentSemesterClassCount ?? 5} Mata Kuliah Diambil`}
 					icon={<BookOpen className="w-6 h-6" />}
 					accentColor="blue"
 				/>
 				<StatCard
 					label="Tingkat Presensi"
-					value="95.4%"
+					value={`${attendancePercentage}%`}
 					subtext="Aman di atas batas 75%"
 					icon={<CheckCircle2 className="w-6 h-6" />}
 					accentColor="purple"
@@ -95,7 +134,7 @@ export const MahasiswaDashboard: React.FC<MahasiswaDashboardProps> = ({
 
 			{/* Mascot Insight Message */}
 			<PandaMascot
-				message={`Indeks Prestasi Kumulatif kamu saat ini adalah ${student.ipk}. Pertahankan ritme belajar dan kedisiplinan akademik semester ini.`}
+				message={`Indeks Prestasi Kumulatif kamu saat ini adalah ${Number(currentIpk).toFixed(2)}. Pertahankan ritme belajar dan kedisiplinan akademik semester ini.`}
 			/>
 
 			{/* Content Grid: Jadwal Hari Ini & Timeline Pengumuman */}
@@ -110,7 +149,7 @@ export const MahasiswaDashboard: React.FC<MahasiswaDashboardProps> = ({
 						<button
 							type="button"
 							onClick={() => onNavigate("mhs-jadwal")}
-							className="text-xs font-semibold text-[#75834a] hover:underline"
+							className="text-xs font-semibold text-[#75834a] hover:underline cursor-pointer"
 						>
 							Lihat Seluruh Jadwal →
 						</button>
@@ -120,9 +159,9 @@ export const MahasiswaDashboard: React.FC<MahasiswaDashboardProps> = ({
 						padded={false}
 						className="divide-y divide-slate-100 overflow-hidden"
 					>
-						{mockJadwalMahasiswa.slice(0, 3).map((jdw, idx) => (
+						{todaySessions.map((jdw: any, idx: number) => (
 							<div
-								key={jdw.id}
+								key={jdw.classId || jdw.id || idx}
 								className="p-4 sm:p-5 flex items-start gap-4 hover:bg-slate-50 transition-colors"
 							>
 								<div className="w-12 h-12 rounded-xl bg-[#75834a]/10 text-[#566432] flex flex-col items-center justify-center font-bold shrink-0">
@@ -135,24 +174,29 @@ export const MahasiswaDashboard: React.FC<MahasiswaDashboardProps> = ({
 								<div className="flex-1 min-w-0">
 									<div className="flex items-center gap-2">
 										<span className="text-xs font-mono text-slate-500">
-											{jdw.kode}
+											{jdw.courseCode || jdw.kode}
 										</span>
 										<Badge variant="olive">{jdw.sks} SKS</Badge>
 									</div>
 									<h4 className="font-bold text-sm sm:text-base text-slate-900 mt-0.5 truncate">
-										{jdw.matkul}
+										{jdw.courseName || jdw.matkul}
 									</h4>
 									<p className="text-xs text-slate-600 mt-1">
-										Dosen: <span className="font-medium">{jdw.dosen}</span>
+										Dosen:{" "}
+										<span className="font-medium">
+											{jdw.lecturerName || jdw.dosen}
+										</span>
 									</p>
 									<div className="flex items-center justify-between mt-2 text-xs text-slate-500">
 										<div className="flex items-center gap-2 text-xs">
 											<span className="flex items-center gap-1 text-slate-700 font-medium">
 												<Clock className="w-3.5 h-3.5 text-[#75834a]" />
-												{jdw.jam}
+												{jdw.startTime && jdw.endTime
+													? `${jdw.startTime} - ${jdw.endTime}`
+													: jdw.jam}
 											</span>
 											<span>•</span>
-											<span>Ruang: {jdw.ruang}</span>
+											<span>Ruang: {jdw.room || jdw.ruang}</span>
 										</div>
 										<button
 											type="button"
