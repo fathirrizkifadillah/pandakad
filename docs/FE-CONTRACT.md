@@ -350,4 +350,82 @@ Dokumen ini mendefinisikan kontrak data resmi antara antarmuka pengguna frontend
 
 ---
 
-*(Kontrak akan terus diperbarui secara inkremental pada milestone berikutnya: M7 Dashboard & Laporan, M8 Hardening & Swagger, M9 Integrasi Frontend).*
+## 8. Modul Dashboard & Laporan / Ekspor CSV (Milestone 7)
+
+### A. Dashboard Portal Berbasis Peran
+* `GET /api/v1/dashboard/admin` (Khusus Administrator Utama):
+  - Mengembalikan metrik agregasi seluruh institusi, periode berjalan, ringkasan per prodi, okupansi ruangan, dan status KRS.
+  - Respons:
+    ```json
+    {
+      "status": "success",
+      "data": {
+        "activePeriod": {
+          "id": "uuid-term",
+          "code": "20261",
+          "name": "Semester Ganjil 2026/2027",
+          "academicYear": "2026/2027",
+          "semester": "Ganjil",
+          "isKrsOpen": true,
+          "isGradeInputOpen": false
+        },
+        "stats": {
+          "totalStudents": 24,
+          "totalLecturers": 7,
+          "totalCourses": 8,
+          "totalClasses": 12,
+          "totalRooms": 8,
+          "totalUsers": 35,
+          "totalEnrollments": 6,
+          "occupancyRate": 100,
+          "krsOverview": {
+            "submitted": 0,
+            "approved": 6,
+            "draft": 0
+          }
+        },
+        "studyPrograms": [
+          {
+            "id": "uuid-sp",
+            "code": "IF",
+            "name": "Teknik Informatika",
+            "degree": "S1",
+            "accreditation": "Unggul",
+            "studentCount": 18,
+            "lecturerCount": 4,
+            "courseCount": 6
+          }
+        ]
+      }
+    }
+    ```
+
+* `GET /api/v1/dashboard/lecturer?day=Senin` (Khusus Dosen & Admin):
+  - Mengembalikan profil dosen pengampu, metrik beban mengajar, persentase kelengkapan nilai, permohonan KRS bimbingan, jadwal hari ini, serta daftar kelas semester berjalan.
+  - Query opsional: `day` (nama hari dalam bahasa Indonesia, e.g. "Senin"), `termId` (UUID periode).
+
+* `GET /api/v1/dashboard/student?day=Senin` (Khusus Mahasiswa & Admin):
+  - Mengembalikan profil mahasiswa, IPK kumulatif, total SKS lulus, SKS semester berjalan, persentase presensi agregat, status kelayakan UAS ($\ge 75\%$), jadwal kuliah hari ini, dan daftar kelas yang diikuti.
+
+### B. Laporan & Ekspor CSV (RFC 4180 + Mitigasi CSV Formula Injection)
+* `GET /api/v1/reports/grades/:classId/csv` (Dosen Pengampu & Admin):
+  - Mengunduh rekap nilai akhir kelas dalam format CSV murni.
+  - Headers:
+    - `Content-Type: text/csv; charset=utf-8`
+    - `Content-Disposition: attachment; filename="rekap_nilai_<classCode>_<courseCode>.csv"`
+  - Format Kolom: `No,NIM,Nama Mahasiswa,Program Studi,Kehadiran (10%),Tugas (20%),UTS (35%),UAS (35%),Nilai Akhir,Nilai Huruf,Bobot,Status Kelulusan`.
+  - Keamanan: Proteksi IDOR (Dosen lain ditolak 403) dan mitigasi formula injection (karakter awalan `=`, `+`, `-`, `@` otomatis di-escape dengan prefix petik tunggal).
+
+* `GET /api/v1/reports/attendance/:classId/csv` (Dosen Pengampu & Admin):
+  - Mengunduh matriks absensi 16 pertemuan kelas dalam format CSV.
+  - Headers:
+    - `Content-Type: text/csv; charset=utf-8`
+    - `Content-Disposition: attachment; filename="rekap_presensi_<classCode>_<courseCode>.csv"`
+  - Format Kolom: `No,NIM,Nama Mahasiswa,Program Studi,P1,P2,...,P16,Total Hadir,Total Izin,Total Sakit,Total Alpa,Persentase Kehadiran (%),Status UAS`.
+
+* `GET /api/v1/reports/summary/academic` (Khusus Administrator Utama):
+  - Mengembalikan laporan eksekutif statistik IPK rata-rata kampus, rekap IPK per program studi, dan distribusi nilai huruf (A s.d. E).
+
+---
+
+*(Kontrak akan terus diperbarui secara inkremental pada milestone berikutnya: M8 Hardening & Swagger, M9 Integrasi Frontend).*

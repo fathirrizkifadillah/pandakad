@@ -12,9 +12,11 @@ import { errorHandler, NotFoundError } from "./middlewares/errorHandler.js";
 import { attendanceRouter } from "./modules/attendance/attendance.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { classesRouter } from "./modules/classes/classes.routes.js";
+import { dashboardRouter } from "./modules/dashboard/dashboard.routes.js";
 import { gradesRouter } from "./modules/grades/grades.routes.js";
 import { krsRouter } from "./modules/krs/krs.routes.js";
 import { masterRouter } from "./modules/master/master.routes.js";
+import { reportsRouter } from "./modules/reports/reports.routes.js";
 
 export const app = express();
 
@@ -78,6 +80,8 @@ app.use("/api/v1/classes", classesRouter);
 app.use("/api/v1/krs", krsRouter);
 app.use("/api/v1/grades", gradesRouter);
 app.use("/api/v1/attendance", attendanceRouter);
+app.use("/api/v1/dashboard", dashboardRouter);
+app.use("/api/v1/reports", reportsRouter);
 
 // Test Endpoints for RBAC Verification (Hanya aktif pada mode test)
 if (env.NODE_ENV === "test") {
