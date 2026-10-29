@@ -5,10 +5,13 @@ import express, { type Request, type Response } from "express";
 import helmet from "helmet";
 import { pinoHttp } from "pino-http";
 import { env } from "./config/env.js";
+import { docsRouter } from "./docs/docs.routes.js";
 import { logger } from "./lib/logger.js";
 import { prisma } from "./lib/prisma.js";
 import { authenticate, requireRole } from "./middlewares/auth.js";
 import { errorHandler, NotFoundError } from "./middlewares/errorHandler.js";
+import { apiLimiter } from "./middlewares/rateLimiter.js";
+import { requestIdMiddleware } from "./middlewares/requestId.js";
 import { attendanceRouter } from "./modules/attendance/attendance.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { classesRouter } from "./modules/classes/classes.routes.js";
@@ -20,8 +23,35 @@ import { reportsRouter } from "./modules/reports/reports.routes.js";
 
 export const app = express();
 
-// Security & Header Middlewares
-app.use(helmet());
+// Request ID Tracing Middleware
+app.use(requestIdMiddleware);
+
+// Security & Header Middlewares (Helmet Hardening dengan CSP untuk Swagger UI)
+app.use(
+	helmet({
+		contentSecurityPolicy: {
+			directives: {
+				defaultSrc: ["'self'"],
+				scriptSrc: [
+					"'self'",
+					"'unsafe-inline'",
+					"https://unpkg.com",
+					"https://cdn.jsdelivr.net",
+				],
+				styleSrc: [
+					"'self'",
+					"'unsafe-inline'",
+					"https://unpkg.com",
+					"https://cdn.jsdelivr.net",
+					"https://fonts.googleapis.com",
+				],
+				fontSrc: ["'self'", "https://fonts.gstatic.com"],
+				imgSrc: ["'self'", "data:", "https://validator.swagger.io"],
+			},
+		},
+		crossOriginEmbedderPolicy: false,
+	}),
+);
 app.use(
 	cors({
 		origin: env.CORS_ORIGIN,
@@ -72,6 +102,13 @@ const handleHealth = async (_req: Request, res: Response) => {
 
 app.get("/health", handleHealth);
 app.get("/api/v1/health", handleHealth);
+
+// Dokumentasi Interaktif OpenAPI 3.1 & Swagger UI (/docs dan /api/v1/openapi.json)
+app.use(docsRouter);
+app.use("/api/v1", docsRouter);
+
+// Global Rate Limiting untuk seluruh endpoint /api/v1 (Kecuali mode test)
+app.use("/api/v1", apiLimiter);
 
 // API v1 Modules
 app.use("/api/v1/auth", authRouter);
