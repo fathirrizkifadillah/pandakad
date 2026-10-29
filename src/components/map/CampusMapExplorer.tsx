@@ -78,8 +78,8 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 		return false;
 	});
 
-	// Zoom and Pan state
-	const [zoom, setZoom] = useState(1);
+	// Zoom and Pan state (Default zoom 0.65 fits the 1536x1024 aerial campus map cleanly into the viewport)
+	const [zoom, setZoom] = useState(0.65);
 	const [pan, setPan] = useState({ x: 0, y: 0 });
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -90,9 +90,10 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 		}
 		return false;
 	});
+	// Sidebar starts open on ultra-wide screens; togglable via Layers icon on desktop/mobile
 	const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
 		if (typeof window !== "undefined") {
-			return window.innerWidth >= 768;
+			return window.innerWidth >= 1536;
 		}
 		return false;
 	});
@@ -147,7 +148,7 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 		}
 	}, [searchQuery, filteredLandmarks.length]);
 
-	// Pan smoothly to a landmark
+	// Pan smoothly to a landmark (normalized against 1536x1024 aerial canvas)
 	const focusOnLandmark = useCallback(
 		(landmark: CampusLandmark) => {
 			setSelectedLandmark(landmark);
@@ -155,10 +156,9 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 			setMascotMood("happy");
 			setMascotBubble(`Informasi detail ${landmark.name} (${landmark.code}).`);
 
-			// Calculate center offset on the canvas (coords are in 0-100 percentage)
-			// Normalized center is (50, 50)
-			const offsetX = (50 - landmark.coords.x) * 8 * zoom;
-			const offsetY = (50 - landmark.coords.y) * 5 * zoom;
+			// Center offset on 1536x1024 canvas (coords are in 0-100 percentage)
+			const offsetX = (50 - landmark.coords.x) * 15.36 * zoom;
+			const offsetY = (50 - landmark.coords.y) * 10.24 * zoom;
 			setPan({ x: offsetX, y: offsetY });
 		},
 		[zoom],
@@ -166,11 +166,11 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 
 	// Zoom Controls
 	const handleZoomIn = () =>
-		setZoom((prev) => Math.min(Number((prev + 0.25).toFixed(2)), 2.4));
+		setZoom((prev) => Math.min(Number((prev + 0.2).toFixed(2)), 2.5));
 	const handleZoomOut = () =>
-		setZoom((prev) => Math.max(Number((prev - 0.25).toFixed(2)), 0.8));
+		setZoom((prev) => Math.max(Number((prev - 0.2).toFixed(2)), 0.45));
 	const handleResetView = () => {
-		setZoom(1);
+		setZoom(0.65);
 		setPan({ x: 0, y: 0 });
 	};
 
@@ -190,9 +190,9 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 		if (Math.abs(newX - pan.x) > 4 || Math.abs(newY - pan.y) > 4) {
 			setHasMovedDuringDrag(true);
 		}
-		// Bound the pan
-		const maxPanX = 600 * zoom;
-		const maxPanY = 400 * zoom;
+		// Bound the pan based on canvas size
+		const maxPanX = 850 * zoom;
+		const maxPanY = 600 * zoom;
 		setPan({
 			x: Math.max(-maxPanX, Math.min(maxPanX, newX)),
 			y: Math.max(-maxPanY, Math.min(maxPanY, newY)),
@@ -256,7 +256,7 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 								UNIVERSITAS PANDA RAYA
 							</h1>
 							<span className="text-[10px] text-[#75834a] font-bold uppercase tracking-wider">
-								Peta Kampus Interaktif · Kawasan Hijau Berkelanjutan
+								Peta Kampus Interaktif · Kawasan Hijau di Tengah Danau
 							</span>
 						</div>
 					</div>
@@ -358,24 +358,35 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 							<div className="space-y-1">
 								{CATEGORIES.map((cat) => {
 									const isActive = activeCategory === cat.id;
+									const Icon = cat.icon;
 									return (
 										<button
 											key={cat.id}
 											type="button"
 											onClick={() => setActiveCategory(cat.id)}
-											className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+											className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
 												isActive
-													? "bg-[#566432] text-white shadow-xs"
-													: "text-slate-700 hover:bg-[#f6f5ef]"
+													? "bg-[#75834a] text-white font-bold shadow-xs"
+													: "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
 											}`}
 										>
 											<div className="flex items-center gap-2">
-												<cat.icon className="w-3.5 h-3.5 shrink-0" />
+												<Icon className="w-3.5 h-3.5 shrink-0" />
 												<span>{cat.label}</span>
 											</div>
-											{isActive && (
-												<span className="w-1.5 h-1.5 rounded-full bg-[#d2ae54]" />
-											)}
+											<span
+												className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+													isActive
+														? "bg-white/20 text-white"
+														: "bg-slate-200/60 text-slate-600"
+												}`}
+											>
+												{cat.id === "semua"
+													? CAMPUS_LANDMARKS.length
+													: CAMPUS_LANDMARKS.filter(
+															(l) => l.category === cat.id,
+														).length}
+											</span>
 										</button>
 									);
 								})}
@@ -426,19 +437,19 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 						<Layers className="w-4 h-4" />
 					</button>
 
-					{/* Clean Campus Map Canvas & Marker Synchronized Transform Layer */}
+					{/* Clean Aerial Campus Map Canvas & Marker Synchronized Transform Layer (shrink-0 prevents flex crushing) */}
 					<div
-						className="relative origin-center transition-transform duration-75 ease-out select-none"
+						className="relative origin-center transition-transform duration-75 ease-out select-none shrink-0"
 						style={{
 							transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-							width: "1376px",
-							height: "768px",
+							width: "1536px",
+							height: "1024px",
 						}}
 					>
-						{/* Clean Isometric Campus Art (ZERO baked UI) */}
+						{/* Clean Aerial Campus Illustration (Eco-Campus di Tengah Danau) */}
 						<img
-							src="/assets/map/unpanda_campus_clean.webp"
-							alt="Denah Isometrik Kampus Bersih UNPANDA"
+							src="/assets/map/kampus_danau.webp"
+							alt="Denah Aerial Kampus Hijau UNPANDA di Tengah Danau"
 							draggable={false}
 							className="w-full h-full object-cover select-none pointer-events-none rounded-3xl shadow-2xl border-4 border-white/60"
 						/>
@@ -538,13 +549,13 @@ export const CampusMapExplorer: React.FC<CampusMapExplorerProps> = ({
 						</button>
 					</div>
 
-					{/* Bottom Carousel: Quick Landmark Thumbnails */}
-					<div className="absolute bottom-4 left-4 right-4 z-30 pointer-events-none">
-						<div className="max-w-4xl mx-auto bg-white/95 backdrop-blur-md p-2 rounded-2xl border border-slate-300 shadow-lg flex items-center gap-2 overflow-x-auto pointer-events-auto">
-							<span className="text-[10px] font-extrabold text-[#566432] uppercase px-2 shrink-0">
-								Gedung:
+					{/* Bottom Quick-Carousel Bar */}
+					<div className="absolute bottom-4 left-4 right-4 z-30 flex justify-center pointer-events-none">
+						<div className="pointer-events-auto max-w-2xl w-full bg-white/95 backdrop-blur-md rounded-2xl p-2 border border-slate-200/80 shadow-lg flex items-center gap-2 overflow-x-auto">
+							<span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-2 shrink-0">
+								Jelajahi:
 							</span>
-							<div className="flex items-center gap-2">
+							<div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
 								{CAMPUS_LANDMARKS.map((item) => {
 									const isSelected = selectedLandmark?.id === item.id;
 									return (

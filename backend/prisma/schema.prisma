@@ -1,0 +1,313 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  Admin
+  Dosen
+  Mahasiswa
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role
+  identifier   String   @unique // NIM untuk Mahasiswa, NIP untuk Dosen, ID untuk Admin
+  name         String
+  avatar       String?
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  sessions        Session[]
+  studentProfile  StudentProfile?
+  lecturerProfile LecturerProfile?
+  gradeAuditLogs  GradeAuditLog[]
+
+  @@index([identifier])
+  @@index([email])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model InstitutionSettings {
+  id            String   @id @default("default")
+  name          String   @default("Universitas Panda Raya")
+  shortName     String   @default("UNPANDA") @map("short_name")
+  code          String   @default("061032")
+  accreditation String   @default("Unggul")
+  facultyName   String   @default("Fakultas Teknologi dan Informatika (FTI)") @map("faculty_name")
+  email         String   @default("baak@unpanda.ac.id")
+  phone         String   @default("(024) 844-5566")
+  address       String   @default("Kawasan Kampus Terpadu UNPANDA, Jl. Raya Panda Hijau No. 1")
+  logoUrl       String   @default("/assets/logo_unpanda.png") @map("logo_url")
+  activeTermId  String?  @map("active_term_id")
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("institution_settings")
+}
+
+model StudyProgram {
+  id            String   @id @default(uuid())
+  code          String   @unique // e.g. "IF", "SI", "TK"
+  name          String // e.g. "Teknik Informatika"
+  degree        String   @default("S1")
+  accreditation String   @default("Unggul")
+  headOfProgram String?  @map("head_of_program")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  courses          Course[]
+  students         StudentProfile[]
+  lecturerProfiles LecturerProfile[]
+
+  @@map("study_programs")
+}
+
+model AcademicTerm {
+  id                  String   @id @default(uuid())
+  code                String   @unique // e.g. "20261"
+  name                String // e.g. "Semester Ganjil 2026/2027"
+  academicYear        String   @map("academic_year") // e.g. "2026/2027"
+  semester            String // "Ganjil" | "Genap" | "Pendek"
+  startDate           DateTime @map("start_date") @db.Date
+  endDate             DateTime @map("end_date") @db.Date
+  krsStartDate        DateTime @map("krs_start_date") @db.Timestamptz
+  krsEndDate          DateTime @map("krs_end_date") @db.Timestamptz
+  gradeInputStartDate DateTime @map("grade_input_start_date") @db.Timestamptz
+  gradeInputEndDate   DateTime @map("grade_input_end_date") @db.Timestamptz
+  isActive            Boolean  @default(false) @map("is_active")
+  isKrsOpen           Boolean  @default(false) @map("is_krs_open")
+  isGradeInputOpen    Boolean  @default(false) @map("is_grade_input_open")
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  classes     Class[]
+  enrollments Enrollment[]
+
+  @@index([isActive])
+  @@map("academic_terms")
+}
+
+model Building {
+  id        String   @id @default(uuid())
+  code      String   @unique // e.g. "GD-A", "GD-B", "LAB-FTI"
+  name      String // e.g. "Gedung Kuliah Terpadu A"
+  floors    Int      @default(4)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  rooms Room[]
+
+  @@map("buildings")
+}
+
+model Room {
+  id         String   @id @default(uuid())
+  code       String   @unique // e.g. "LAB-AI-302", "GDA-105"
+  name       String // e.g. "Lab AI 302"
+  buildingId String   @map("building_id")
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  capacity   Int      @default(40)
+  type       String   @default("Teori") // "Teori" | "Laboratorium" | "Auditorium"
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  schedules Schedule[]
+
+  @@index([buildingId])
+  @@map("rooms")
+}
+
+model Course {
+  id             String       @id @default(uuid())
+  code           String       @unique // e.g. "IF3101"
+  name           String // e.g. "Kecerdasan Buatan & Machine Learning"
+  sks            Int          @default(3)
+  semester       Int          @default(1) // Semester rekomendasi (1 - 8)
+  category       String       @default("Wajib") // "Wajib" | "Pilihan"
+  studyProgramId String       @map("study_program_id")
+  studyProgram   StudyProgram @relation(fields: [studyProgramId], references: [id], onDelete: Restrict)
+  description    String?
+  isActive       Boolean      @default(true) @map("is_active")
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+
+  classes Class[]
+
+  @@index([studyProgramId])
+  @@index([code])
+  @@map("courses")
+}
+
+model Class {
+  id             String          @id @default(uuid())
+  code           String // e.g. "IF3101-A"
+  courseId       String          @map("course_id")
+  course         Course          @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  academicTermId String          @map("academic_term_id")
+  academicTerm   AcademicTerm    @relation(fields: [academicTermId], references: [id], onDelete: Restrict)
+  lecturerId     String          @map("lecturer_id")
+  lecturer       LecturerProfile @relation(fields: [lecturerId], references: [id], onDelete: Restrict)
+  quota          Int             @default(40)
+  enrolledCount  Int             @default(0) @map("enrolled_count")
+  status         String          @default("Open") // "Open" | "Closed" | "Cancelled"
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+
+  schedules   Schedule[]
+  enrollments Enrollment[]
+
+  @@unique([academicTermId, code])
+  @@index([academicTermId])
+  @@index([courseId])
+  @@index([lecturerId])
+  @@map("classes")
+}
+
+model Schedule {
+  id        String   @id @default(uuid())
+  classId   String   @map("class_id")
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  roomId    String   @map("room_id")
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  dayOfWeek String   @map("day_of_week") // "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"
+  startTime String   @map("start_time") // Format "HH:mm", e.g. "08:00"
+  endTime   String   @map("end_time") // Format "HH:mm", e.g. "10:30"
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([classId])
+  @@index([roomId, dayOfWeek])
+  @@map("schedules")
+}
+
+model StudentProfile {
+  id                String           @id @default(uuid())
+  userId            String           @unique @map("user_id")
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nim               String           @unique
+  studyProgramId    String           @map("study_program_id")
+  studyProgram      StudyProgram     @relation(fields: [studyProgramId], references: [id], onDelete: Restrict)
+  entryYear         Int              @default(2022) @map("entry_year")
+  currentSemester   Int              @default(5) @map("current_semester")
+  gpa               Decimal          @default(3.75) @db.Decimal(3, 2)
+  totalSks          Int              @default(84) @map("total_sks")
+  academicAdvisorId String?          @map("academic_advisor_id")
+  academicAdvisor   LecturerProfile? @relation(fields: [academicAdvisorId], references: [id])
+  status            String           @default("Aktif") // "Aktif" | "Cuti" | "Lulus"
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+
+  enrollments Enrollment[]
+
+  @@index([nim])
+  @@index([studyProgramId])
+  @@map("student_profiles")
+}
+
+model LecturerProfile {
+  id             String        @id @default(uuid())
+  userId         String        @unique @map("user_id")
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nidn           String        @unique
+  nip            String?       @unique
+  title          String?
+  expertise      String?
+  studyProgramId String?       @map("study_program_id")
+  studyProgram   StudyProgram? @relation(fields: [studyProgramId], references: [id])
+  status         String        @default("Aktif") // "Aktif" | "Tugas Belajar" | "Pensiun"
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  advisedStudents     StudentProfile[]
+  classes             Class[]
+  approvedEnrollments Enrollment[]     @relation("DpaApprovals")
+
+  @@index([nidn])
+  @@map("lecturer_profiles")
+}
+
+model Enrollment {
+  id             String           @id @default(uuid())
+  studentId      String           @map("student_id")
+  student        StudentProfile   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classId        String           @map("class_id")
+  class          Class            @relation(fields: [classId], references: [id], onDelete: Restrict)
+  academicTermId String           @map("academic_term_id")
+  academicTerm   AcademicTerm     @relation(fields: [academicTermId], references: [id], onDelete: Restrict)
+  status         String           @default("Draft") // "Draft" | "Submitted" | "Approved" | "Rejected"
+  approvedById   String?          @map("approved_by_id")
+  approvedBy     LecturerProfile? @relation("DpaApprovals", fields: [approvedById], references: [id])
+  approvedAt     DateTime?        @map("approved_at") @db.Timestamptz
+  notes          String?
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+
+  grade Grade?
+
+  @@unique([studentId, classId])
+  @@index([studentId, academicTermId])
+  @@index([classId])
+  @@map("enrollments")
+}
+
+model Grade {
+  id              String     @id @default(uuid())
+  enrollmentId    String     @unique @map("enrollment_id")
+  enrollment      Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  attendanceScore Decimal    @default(0.00) @map("attendance_score") @db.Decimal(5, 2)
+  assignmentScore Decimal    @default(0.00) @map("assignment_score") @db.Decimal(5, 2)
+  midtermScore    Decimal    @default(0.00) @map("midterm_score") @db.Decimal(5, 2)
+  finalExamScore  Decimal    @default(0.00) @map("final_exam_score") @db.Decimal(5, 2)
+  finalScore      Decimal    @default(0.00) @map("final_score") @db.Decimal(5, 2)
+  letterGrade     String     @default("E") @map("letter_grade")
+  gradePoint      Decimal    @default(0.00) @map("grade_point") @db.Decimal(3, 2)
+  status          String     @default("Draft") // "Draft" | "Final"
+  submittedAt     DateTime?  @map("submitted_at") @db.Timestamptz
+  submittedById   String?    @map("submitted_by_id")
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  auditLogs GradeAuditLog[]
+
+  @@map("grades")
+}
+
+model GradeAuditLog {
+  id            String   @id @default(uuid())
+  gradeId       String   @map("grade_id")
+  grade         Grade    @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  changedById   String   @map("changed_by_id")
+  changedBy     User     @relation(fields: [changedById], references: [id], onDelete: Restrict)
+  component     String // "kehadiran" | "tugas" | "uts" | "uas" | "final"
+  previousScore Decimal? @map("previous_score") @db.Decimal(5, 2)
+  newScore      Decimal  @map("new_score") @db.Decimal(5, 2)
+  previousGrade String?  @map("previous_grade")
+  newGrade      String   @map("new_grade")
+  reason        String   @default("Pembaruan nilai")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([gradeId])
+  @@index([changedById])
+  @@map("grade_audit_logs")
+}

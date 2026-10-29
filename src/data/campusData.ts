@@ -20,7 +20,7 @@ export interface CampusLandmark {
 		| "olahraga-seni"
 		| "ibadah";
 	categoryLabel: string;
-	coords: { x: number; y: number }; // Percentage 0 - 100 on 1376x768 clean map
+	coords: { x: number; y: number }; // Percentage 0 - 100 on 1536x1024 clean aerial map
 	image: string;
 	subtitle: string;
 	description: string;
@@ -86,15 +86,15 @@ export const CAMPUS_SLIDES: BuildingSlide[] = [
 export const CAMPUS_LANDMARKS: CampusLandmark[] = [
 	{
 		id: "rektorat",
-		name: "Rektorat UNPANDA",
+		name: "Gedung Rektorat UNPANDA",
 		code: "UNP-01",
 		category: "umum",
 		categoryLabel: "Fasilitas Umum",
-		coords: { x: 53.5, y: 38.5 },
+		coords: { x: 48.5, y: 23.5 },
 		image: "/assets/buildings/rektorat.webp",
 		subtitle: "Pusat Administrasi & Rektorat Eksekutif",
 		description:
-			"Rektorat UNPANDA merupakan pusat kendali institusi, manajemen birokrasi, dan senat akademik. Berada di titik pusat kampus dengan pelataran air mancur ikonik.",
+			"Rektorat UNPANDA merupakan pusat kendali institusi, manajemen birokrasi, dan senat akademik. Menampilkan arsitektur megah berwawasan lingkungan di pusat pulau kampus.",
 		operationalHours: "Senin - Jumat, 08:00 - 16:30 WIB",
 		floors: "4 Lantai + Graha Utama",
 		facilities: [
@@ -106,12 +106,75 @@ export const CAMPUS_LANDMARKS: CampusLandmark[] = [
 		quickFeatures: ["Ruang Rektor", "Ruang Senat", "Layanan BAAK"],
 	},
 	{
+		id: "asrama",
+		name: "Graha Asrama Mahasiswa",
+		code: "UNP-11",
+		category: "umum",
+		categoryLabel: "Fasilitas Umum",
+		coords: { x: 32.5, y: 16.5 },
+		image: "/assets/buildings/asrama.webp",
+		subtitle: "Kompleks Hunian Ramah Lingkungan & Komunal",
+		description:
+			"Hunian mahasiswa modern bertingkat dengan konsep eco-living, ruang belajar bersama 24 jam, kantin sehat, dan akses langsung ke danau kampus.",
+		operationalHours: "Akses Mahasiswa 24 Jam",
+		floors: "8 Lantai Tower A & B",
+		facilities: [
+			"Kamar Berperabot Lengkap & Wi-Fi",
+			"Communal Study Lounge & Library",
+			"Laundry Mandiri & Minimarket",
+			"Keamanan & Resepsionis 24 Jam",
+		],
+		quickFeatures: ["Asrama Residen", "Study Lounge", "Keamanan 24 Jam"],
+	},
+	{
+		id: "pustaka-panda",
+		name: "Perpustakaan Pustaka Panda",
+		code: "UNP-04",
+		category: "akademik",
+		categoryLabel: "Fasilitas Akademik",
+		coords: { x: 73.0, y: 32.5 },
+		image: "/assets/buildings/pustaka-panda.webp",
+		subtitle: "Lumbung Riset Digital & Koleksi Naskah",
+		description:
+			"Perpustakaan pusat bersertifikasi green building dengan rooftop taman membaca. Menyediakan ratusan ribu e-book, repositori skripsi/jurnal, dan ruang hening baca mandiri.",
+		operationalHours: "Senin - Sabtu, 07:30 - 20:30 WIB",
+		floors: "3 Lantai + Skybridge",
+		facilities: [
+			"Repositori Ilmiah E-Library 24 Jam",
+			"Silent Study Pods Ber-AC",
+			"Ruang Diskusi Multimedia",
+			"Koleksi Naskah Khusus & Arsip",
+		],
+		quickFeatures: ["E-Library", "Study Pods", "Arsip Riset"],
+	},
+	{
+		id: "gkt",
+		name: "Gedung Kuliah Terpadu (GKT)",
+		code: "UNP-05",
+		category: "akademik",
+		categoryLabel: "Fasilitas Akademik",
+		coords: { x: 23.5, y: 41.5 },
+		image: "/assets/buildings/kampus-hijau.webp",
+		subtitle: "Kompleks Ruang Kuliah & Lab Komputasi",
+		description:
+			"Kompleks perkuliahan terpadu modern yang saling terhubung koridor terbuka hijau, dirancang untuk efisiensi mobilitas antarkelas dan kolaborasi antarjurusan.",
+		operationalHours: "Senin - Jumat, 07:00 - 18:00 WIB",
+		floors: "6 Lantai (Wing A, B, C)",
+		facilities: [
+			"60 Smart Classrooms Interaktif",
+			"Laboratorium Komputasi Dasar",
+			"Lounge Dosen & Ruang Asistensi",
+			"Auditorium Kuliah Tamu",
+		],
+		quickFeatures: ["Ruang Kuliah", "Lab Komputer", "Lounge Dosen"],
+	},
+	{
 		id: "panda-hub",
 		name: "Panda Hub (Student Center)",
 		code: "UNP-03",
 		category: "umum",
 		categoryLabel: "Fasilitas Umum",
-		coords: { x: 15.5, y: 48.0 },
+		coords: { x: 61.5, y: 42.0 },
 		image: "/assets/buildings/panda-hub.webp",
 		subtitle: "Pusat Kolaborasi, BEM, UKM & Coworking",
 		description:
@@ -132,11 +195,11 @@ export const CAMPUS_LANDMARKS: CampusLandmark[] = [
 		code: "UNP-02",
 		category: "fakultas",
 		categoryLabel: "Fakultas",
-		coords: { x: 30.0, y: 55.5 },
+		coords: { x: 78.0, y: 49.0 },
 		image: "/assets/buildings/teknologi.webp",
 		subtitle: "Fakultas Komputasi & Rekayasa Hijau",
 		description:
-			"Gedung kubik futuristik berkaca ganda dengan rooftop sky-garden. Menampung lab AI, robotika, rekayasa perangkat lunak, dan smart classroom.",
+			"Gedung futuristik berkaca ganda dengan rooftop sky-garden. Menampung lab AI terdepan, robotika, rekayasa perangkat lunak, dan smart classroom.",
 		operationalHours: "Senin - Sabtu, 07:00 - 21:00 WIB",
 		floors: "5 Lantai + Rooftop Garden",
 		facilities: [
@@ -148,75 +211,12 @@ export const CAMPUS_LANDMARKS: CampusLandmark[] = [
 		quickFeatures: ["Lab AI", "Studio IoT", "Smart Class"],
 	},
 	{
-		id: "pustaka-panda",
-		name: "Perpustakaan Pustaka Panda",
-		code: "UNP-04",
-		category: "akademik",
-		categoryLabel: "Fasilitas Akademik",
-		coords: { x: 43.0, y: 28.5 },
-		image: "/assets/buildings/pustaka-panda.webp",
-		subtitle: "Lumbung Riset Digital & Koleksi Naskah",
-		description:
-			"Perpustakaan pusat dengan sertifikasi green building. Menyediakan ratusan ribu e-book, repositori skripsi/jurnal, dan ruang hening baca mandiri.",
-		operationalHours: "Senin - Sabtu, 07:30 - 20:30 WIB",
-		floors: "3 Lantai + Skybridge",
-		facilities: [
-			"Repositori Ilmiah E-Library 24 Jam",
-			"Silent Study Pods Ber-AC",
-			"Ruang Diskusi Multimedia",
-			"Koleksi Naskah Khusus & Arsip",
-		],
-		quickFeatures: ["E-Library", "Study Pods", "Arsip Riset"],
-	},
-	{
-		id: "gkt",
-		name: "Gedung Kuliah Terpadu (GKT)",
-		code: "UNP-05",
-		category: "akademik",
-		categoryLabel: "Fasilitas Akademik",
-		coords: { x: 61.0, y: 26.5 },
-		image: "/assets/buildings/gkt-kuliah.webp",
-		subtitle: "Kompleks Ruang Kuliah & Lab Komputasi",
-		description:
-			"Kompleks gedung bertingkat yang saling terhubung jembatan layang kaca, dirancang untuk efisiensi mobilitas antarkelas dan pertukaran disiplin ilmu.",
-		operationalHours: "Senin - Jumat, 07:00 - 18:00 WIB",
-		floors: "6 Lantai (Wing A, B, C)",
-		facilities: [
-			"60 Smart Classrooms Interaktif",
-			"Laboratorium Komputasi Dasar",
-			"Lounge Dosen & Ruang Asistensi",
-			"Auditorium Kuliah Tamu",
-		],
-		quickFeatures: ["Ruang Kuliah", "Lab Komputer", "Lounge Dosen"],
-	},
-	{
-		id: "riset",
-		name: "Pusat Riset dan Inovasi",
-		code: "UNP-08",
-		category: "akademik",
-		categoryLabel: "Fasilitas Akademik",
-		coords: { x: 37.5, y: 39.0 },
-		image: "/assets/buildings/riset-inovasi.webp",
-		subtitle: "Laboratorium Sains Terapan & Hilirisasi",
-		description:
-			"Fasilitas penelitian multidisiplin untuk dosen dan peneliti mahasiswa, berfokus pada teknologi energi terbarukan, data science, dan bioteknologi hijau.",
-		operationalHours: "Senin - Sabtu, 08:00 - 20:00 WIB",
-		floors: "4 Lantai",
-		facilities: [
-			"Clean Room Nanoteknologi",
-			"Inkubator Produk Hilirisasi",
-			"Makerspace 3D Rapid Prototyping",
-			"Pusat Paten & Hak Kekayaan Intelektual",
-		],
-		quickFeatures: ["Pusat Inovasi", "Clean Room", "Makerspace"],
-	},
-	{
 		id: "sport-center",
 		name: "Panda Sport Center & Stadium",
 		code: "UNP-06",
 		category: "olahraga-seni",
 		categoryLabel: "Olahraga & Seni",
-		coords: { x: 83.5, y: 35.0 },
+		coords: { x: 15.5, y: 60.5 },
 		image: "/assets/buildings/sport-center.webp",
 		subtitle: "Stadion Sepakbola & Gelanggang Atletik",
 		description:
@@ -237,7 +237,7 @@ export const CAMPUS_LANDMARKS: CampusLandmark[] = [
 		code: "UNP-07",
 		category: "ibadah",
 		categoryLabel: "Ibadah & Rohani",
-		coords: { x: 88.0, y: 52.5 },
+		coords: { x: 61.0, y: 61.5 },
 		image: "/assets/buildings/masjid-alpanda.webp",
 		subtitle: "Pusat Ibadah, Kajian & Kebajikan",
 		description:
@@ -258,7 +258,7 @@ export const CAMPUS_LANDMARKS: CampusLandmark[] = [
 		code: "UNP-09",
 		category: "terbuka",
 		categoryLabel: "Ruang Terbuka",
-		coords: { x: 75.0, y: 72.0 },
+		coords: { x: 88.5, y: 72.0 },
 		image: "/assets/buildings/taman-danau.webp",
 		subtitle: "Danau Resapan & Zona Biodiversitas",
 		description:
@@ -279,7 +279,7 @@ export const CAMPUS_LANDMARKS: CampusLandmark[] = [
 		code: "UNP-10",
 		category: "umum",
 		categoryLabel: "Fasilitas Umum",
-		coords: { x: 48.5, y: 83.0 },
+		coords: { x: 49.0, y: 76.5 },
 		image: "/assets/buildings/gerbang-boulevard.webp",
 		subtitle: "Pintu Masuk Utama & Halte Bus Listrik",
 		description:
